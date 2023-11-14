@@ -91,7 +91,7 @@ if __name__ == "__main__":
     scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Shanghai'))
 
     # 添加一个定时任务，每周一到周五的9点到16点之间，每隔20分钟执行一次
-    scheduler.add_job(my_job, 'cron', minute='*/15', hour='9-16', day_of_week='mon-fri')
+    scheduler.add_job(my_job, 'cron', minute='*/30', hour='9-16', day_of_week='mon-fri')
 
     # 启动调度程序
     scheduler.start()
