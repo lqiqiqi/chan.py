@@ -96,4 +96,4 @@ if __name__ == "__main__":
     # 启动调度程序
     scheduler.start()
 
-    app.run_server(debug=False, host='0.0.0.0', port=8080)
+    app.run_server(debug=False, host='0.0.0.0', port=80)
