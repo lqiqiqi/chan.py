@@ -14,16 +14,16 @@ from requests_toolbelt import MultipartEncoder
 
 
 code_dict = {
-    # 'HK.00700': '腾讯',
-    # 'HK.800000': '恒生指数',
-    # 'SH.513300': '纳指etf',
-    # 'HK.09868': '小鹏',
-    # 'HK.03690': '美团',
-    # 'HK.09618': '京东',
-    # 'SH.000991': '全指医药',
-    # 'SH.000922': '中证红利指数',
-    # 'SH.000905': '中证500指数',
-    # 'SH.512880': '证券',
+    'HK.00700': '腾讯',
+    'HK.800000': '恒生指数',
+    'SH.513300': '纳指etf',
+    'HK.09868': '小鹏',
+    'HK.03690': '美团',
+    'HK.09618': '京东',
+    'SH.000991': '全指医药',
+    'SH.000922': '中证红利指数',
+    'SH.000905': '中证500指数',
+    'SH.512880': '证券',
     # 'HK.01681': '康臣药业'
 }
 
@@ -180,7 +180,7 @@ def cal_chan_image(code):
             plot_para=plot_para,
         )
         # plot_driver.figure.show()
-        image_path = f'../TestImage/feishu/{code}.jpg'
+        image_path = f'../TestImage/feishu/{code.split(".")[-1]}.jpg'
         plot_driver.figure.savefig(image_path)
 
     return image_path
@@ -196,12 +196,12 @@ if __name__ == "__main__":
             send_msg(v, type='text')
             send_msg(res['data']['image_key'], type='image')
 
-    # 删除文件夹中的图片
-    folder_path = '../TestImage/feishu/'  # 将这里替换为你的文件夹路径
-
-    for file_name in os.listdir(folder_path):
-        file_path = os.path.join(folder_path, file_name)
-        if os.path.isfile(file_path):
-            os.remove(file_path)
-        elif os.path.isdir(file_path):
-            shutil.rmtree(file_path)
+    # # 删除文件夹中的图片
+    # folder_path = '../TestImage/feishu/'  # 将这里替换为你的文件夹路径
+    #
+    # for file_name in os.listdir(folder_path):
+    #     file_path = os.path.join(folder_path, file_name)
+    #     if os.path.isfile(file_path):
+    #         os.remove(file_path)
+    #     elif os.path.isdir(file_path):
+    #         shutil.rmtree(file_path)

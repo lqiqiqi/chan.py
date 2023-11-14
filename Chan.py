@@ -21,6 +21,9 @@ def GetStockAPI(src):
     if src == DATA_SRC.CCXT:
         from DataAPI.ccxt import CCXT
         _dict[DATA_SRC.CCXT] = CCXT
+    if src == DATA_SRC.FUTU:
+        from DataAPI.FuTuAPI import Futu
+        _dict[DATA_SRC.FUTU] = Futu
     if src in _dict:
         return _dict[src]
     if src.find("custom:") < 0:
