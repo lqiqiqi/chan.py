@@ -180,7 +180,7 @@ def cal_chan_image(code):
             plot_para=plot_para,
         )
         # plot_driver.figure.show()
-        image_path = f'../TestImage/feishu/{code.split(".")[-1]}.jpg'
+        image_path = f'./TestImage/feishu/{code.split(".")[-1]}.jpg'
         plot_driver.figure.savefig(image_path)
 
     return image_path
