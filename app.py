@@ -5,21 +5,6 @@
 # @File    : app.py
 
 import os
-import pandas as pd
-import plotly.express as px
-import dash
-from dash import dcc, html
-from dash.dependencies import Input, Output
-
-from apscheduler.schedulers.background import BackgroundScheduler
-from datetime import datetime
-import time
-import pytz
-
-
-import os
-import pandas as pd
-import plotly.express as px
 import dash
 from dash import dcc, html
 from dash.dependencies import Input, Output
@@ -79,23 +64,5 @@ def update_image(selected_image):
     return html.Img(src=selected_image, style={"width": "auto", "height": "auto"})
 
 
-def my_job():
-    for k, v in code_dict.items():
-        try:
-            cal_chan_image(k, save_image_path='./TestImage/feishu')
-        except Exception as e:
-            print('Stock Info Update Wrong: ', k, v, e)
-    print(f"Job executed at {datetime.now()}")
-
-
 if __name__ == "__main__":
-    # 创建一个BackgroundScheduler实例，并指定时区为北京时间
-    scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Shanghai'))
-
-    # 添加一个定时任务，每周一到周五的9点到16点之间，每隔20分钟执行一次
-    scheduler.add_job(my_job, 'cron', minute='*/20', hour='9-16', day_of_week='mon-fri')
-
-    # 启动调度程序
-    scheduler.start()
-
     app.run_server(debug=False, host='0.0.0.0', port=80)
