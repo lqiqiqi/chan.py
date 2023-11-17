@@ -31,25 +31,27 @@ if __name__ == "__main__":
         name = stock_item[2]
         code_dict[code] = name
 
-    begin_time = "2023-03-01"
+    begin_time = "2023-01-01"
     # end_time = None
-    end_time = "2023-11-06"
+    end_time = "2023-11-15"
     data_src = DATA_SRC.BAO_STOCK
     # data_src = DATA_SRC.FUTU
-    lv_list = [KL_TYPE.K_DAY]
+    lv_list = [KL_TYPE.K_30M]
 
     config = CChanConfig({
         "bi_strict": False,
         "bi_fx_check": "loss",
         "bi_algo": "normal",
         "bi_end_is_peak": False,
-        "one_bi_zs": True,
+        "one_bi_zs": False,
         "triger_step": False,
         "skip_step": 0,
         # "divergence_rate": float("inf"),
+        "bsp1_only_multibi_zs": True,
         "bsp2_follow_1": False,
         "bsp3_follow_1": False,
-        "min_zs_cnt": 0,
+        "seg_algo": "break",
+        "min_zs_cnt": 1,
         "bs1_peak": False,
         "macd_algo": "peak",
         "bs_type": '1,2,1p,3a,2s,3b',
@@ -63,6 +65,7 @@ if __name__ == "__main__":
         "plot_kline_combine": True,
         "plot_bi": True,
         "plot_seg": True,
+        "plot_segzs": True,
         "plot_eigen": True,
         "plot_segseg": False,
         "plot_zs": True,
@@ -92,7 +95,7 @@ if __name__ == "__main__":
             "facecolor": 'green'
         },
         "figure": {
-            "x_range": 200,
+            "x_range": 10000,
             "only_top_lv": False
         },
         "marker": {
@@ -112,16 +115,25 @@ if __name__ == "__main__":
             config=config,
             autype=AUTYPE.QFQ,
         )
-        bsp_list = chan.get_bsp(idx=0)
-        if bsp_list:
-            for bsp in bsp_list[-2:]:
-                if (BSP_TYPE.T3B in bsp.type or BSP_TYPE.T3A in bsp.type) and bsp.is_buy:
-                    # or BSP_TYPE.T2S in bsp.type
-                    print(code, v, bsp.klu.time.toDateStr(), bsp.type2str())
-                    if not config.triger_step:
-                        plot_driver = CPlotDriver(
-                            chan,
-                            plot_config=plot_config,
-                            plot_para=plot_para,
-                        )
-                        plot_driver.figure.show()
+
+        # if not config.triger_step:
+        #     plot_driver = CPlotDriver(
+        #         chan,
+        #         plot_config=plot_config,
+        #         plot_para=plot_para,
+        #     )
+        #     plot_driver.figure.show()
+
+        bsp_list = chan.get_seg_bsp(idx=0)
+        for bsp in bsp_list[-2:]:
+            if (BSP_TYPE.T2S in bsp.type) and bsp.is_buy:
+                # or BSP_TYPE.T2S in bsp.type
+                print(code, v, bsp.klu.time.toDateStr(), bsp.type2str())
+                if not config.triger_step:
+                    plot_driver = CPlotDriver(
+                        chan,
+                        plot_config=plot_config,
+                        plot_para=plot_para,
+                    )
+                    plot_driver.figure.show()
+

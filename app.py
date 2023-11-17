@@ -36,8 +36,7 @@ code_dict = {
     'SH.000991': '全指医药',
     'SH.000922': '中证红利指数',
     'SH.000905': '中证500指数',
-    'SH.512880': '证券',
-    'HK.01681': '康臣药业'
+    'SH.512880': '证券'
 }
 
 
@@ -82,7 +81,10 @@ def update_image(selected_image):
 
 def my_job():
     for k, v in code_dict.items():
-        image_path = cal_chan_image(k)
+        try:
+            cal_chan_image(k, save_image_path='./TestImage/feishu')
+        except Exception as e:
+            print('Stock Info Update Wrong: ', k, v, e)
     print(f"Job executed at {datetime.now()}")
 
 
@@ -91,7 +93,7 @@ if __name__ == "__main__":
     scheduler = BackgroundScheduler(timezone=pytz.timezone('Asia/Shanghai'))
 
     # 添加一个定时任务，每周一到周五的9点到16点之间，每隔20分钟执行一次
-    scheduler.add_job(my_job, 'cron', minute='*/30', hour='9-16', day_of_week='mon-fri')
+    scheduler.add_job(my_job, 'cron', minute='*/20', hour='9-16', day_of_week='mon-fri')
 
     # 启动调度程序
     scheduler.start()

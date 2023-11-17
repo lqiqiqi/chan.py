@@ -12,18 +12,21 @@ import json
 import requests
 from requests_toolbelt import MultipartEncoder
 
+from Test.config import chan_config, plot_config, plot_para
 
 code_dict = {
     'HK.00700': '腾讯',
     'HK.800000': '恒生指数',
     'SH.513300': '纳指etf',
-    'HK.09868': '小鹏',
-    'HK.03690': '美团',
-    'HK.09618': '京东',
-    'SH.000991': '全指医药',
-    'SH.000922': '中证红利指数',
-    'SH.000905': '中证500指数',
-    'SH.512880': '证券',
+    # 'HK.09868': '小鹏',
+    # 'HK.03690': '美团',
+    # 'HK.09618': '京东',
+    # 'SH.000991': '全指医药',
+    # 'SH.000922': '中证红利指数',
+    # 'SH.000905': '中证500指数',
+    # 'SH.512880': '证券',
+    # 'HK.07552': '恒科反向2x',
+    # 'HK.07226': '恒科正向2x'
     # 'HK.01681': '康臣药业'
 }
 
@@ -84,7 +87,7 @@ def upload_image(image_path, access_token):
     return response.content
 
 
-def cal_chan_image(code):
+def cal_chan_image(code, save_image_path='../TestImage/feishu'):
     # 创建北京时区对象
     beijing_tz = timezone(timedelta(hours=8))
     # 获取北京时间的当前时间
@@ -97,72 +100,8 @@ def cal_chan_image(code):
     data_src = DATA_SRC.FUTU
     lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M, KL_TYPE.K_5M]
 
-    config = CChanConfig({
-        "bi_strict": False,
-        "bi_fx_check": "loss",
-        "bi_algo": "normal",
-        "bi_end_is_peak": False,
-        "one_bi_zs": False,
-        "triger_step": False,
-        "skip_step": 0,
-        # "divergence_rate": float("inf"),
-        "bsp2_follow_1": False,
-        "bsp3_follow_1": False,
-        "min_zs_cnt": 0,
-        "bs1_peak": False,
-        "macd_algo": "peak",
-        "bs_type": '1,2,1p,3a,2s,3b',
-        "print_warning": True,
-        "zs_algo": "normal",
-        # "zs_algo": "over_seg"
-    })
+    config = CChanConfig(chan_config)
 
-    plot_config = {
-        "plot_kline": True,
-        "plot_kline_combine": True,
-        "plot_bi": True,
-        "plot_seg": True,
-        "plot_eigen": True,
-        "plot_segseg": False,
-        "plot_segzs": True,
-        "plot_zs": False,
-        "plot_macd": True,
-        "plot_mean": False,
-        "plot_channel": False,
-        "plot_bsp": False,
-        "plot_extrainfo": False,
-        "plot_demark": False,
-        "plot_marker": False,
-        "plot_rsi": False,
-        "plot_kdj": False,
-        "plot_segbsp": True,
-        "plot_boll": True
-    }
-
-    plot_para = {
-        "seg": {
-            # "plot_trendline": True,
-            # "sub_lv_cnt": 6,
-            # "facecolor": 'green',
-            "plot_trendline": False
-        },
-        "bi": {
-            # "show_num": True,
-            # "disp_end": True,
-            "sub_lv_cnt": 30,
-            "facecolor": 'green'
-        },
-        "figure": {
-            "x_range": 10000,
-            "only_top_lv": False
-        },
-        "marker": {
-            # "markers": {  # text, position, color
-            #     '2023/06/01': ('marker here', 'up', 'red'),
-            #     '2023/06/08': ('marker here', 'down')
-            # },
-        }
-    }
     chan = CChan(
         code=code,
         begin_time=begin_time,
@@ -180,7 +119,7 @@ def cal_chan_image(code):
             plot_para=plot_para,
         )
         # plot_driver.figure.show()
-        image_path = f'./TestImage/feishu/{code.split(".")[-1]}.jpg'
+        image_path = f'{save_image_path}/{code.split(".")[-1]}.jpg'
         plot_driver.figure.savefig(image_path)
 
     return image_path
