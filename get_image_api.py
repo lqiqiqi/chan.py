@@ -14,6 +14,8 @@ import requests
 from requests_toolbelt import MultipartEncoder
 
 from flask import Flask, jsonify, request
+from flask_httpauth import HTTPBasicAuth
+
 # from flask_cors import CORS
 
 
@@ -21,6 +23,16 @@ from Test.config import chan_config, plot_config, plot_para
 
 app = Flask(__name__)
 # CORS(app)
+auth = HTTPBasicAuth()
+
+
+@auth.verify_password
+def verify_password(username, password):
+    # 在此处添加您的验证逻辑，例如检查数据库中的用户名和密码
+    if username == 'user' and password == '123456':
+        return username
+    return None
+
 
 def post_url_with_header(url, data):
     try:
@@ -114,6 +126,7 @@ def cal_chan_image(code, save_image_path='../TestImage/feishu'):
 
 
 @app.route('/get_image', methods=['GET'])
+@auth.login_required
 def get_image_api():
     code = request.args.get('code', '')
     access_token = get_token()
@@ -147,4 +160,4 @@ def get_image_api():
 
 
 if __name__ == '__main__':
-    app.run(debug=True, port=80)
+    app.run(host='0.0.0.0', debug=True, port=80)
