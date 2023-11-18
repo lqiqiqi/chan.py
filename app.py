@@ -30,7 +30,7 @@ rts_dash_prefix = os.getenv('RTS_DASH_PREFIX')
 
 # app server
 app = dash.Dash('DemoDashBoard', requests_pathname_prefix=req_dash_prefix, routes_pathname_prefix=rts_dash_prefix,
-                assets_folder='TestImage', assets_url_path='../TestImage')
+                assets_folder='TestImage', assets_url_path='TestImage')
 # app = dash.Dash(__name__)
 
 server = app.server
