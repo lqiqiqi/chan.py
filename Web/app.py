@@ -30,7 +30,7 @@ rts_dash_prefix = os.getenv('RTS_DASH_PREFIX')
 
 # app server
 app = dash.Dash('DemoDashBoard', requests_pathname_prefix=req_dash_prefix, routes_pathname_prefix=rts_dash_prefix,
-                assets_folder='TestImage', assets_url_path='TestImage')
+                assets_folder='TestImage', assets_url_path='../TestImage')
 # app = dash.Dash(__name__)
 
 server = app.server
@@ -42,7 +42,7 @@ server = app.server
 #     # {"label": "图片 3", "value": "https://example.com/path/to/your/image3.jpg"},
 # ]
 image_options = [
-    {"label": code, "value": f"./TestImage/feishu/{code.split('.')[-1]}.jpg"} for code, _ in code_dict.items()
+    {"label": code, "value": f"../TestImage/feishu/{code.split('.')[-1]}.jpg"} for code, _ in code_dict.items()
 ]
 
 # 创建 Dash 布局

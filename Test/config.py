@@ -3,7 +3,7 @@
 # @Time    : 2023/11/17 11:06
 # @Author  : rockieluo
 # @File    : config.py
-
+from Common.CEnum import KL_TYPE
 
 chan_config = {
         "bi_strict": False,
@@ -25,26 +25,69 @@ chan_config = {
         "zs_algo": "over_seg"
 }
 
-plot_config = {
+plot_config = {KL_TYPE.K_DAY: {
     "plot_kline": True,
-    "plot_kline_combine": True,
-    "plot_bi": True,
-    "plot_seg": True,
-    "plot_eigen": True,
-    "plot_segseg": False,
-    "plot_segzs": True,
-    "plot_zs": False,
-    "plot_macd": True,
-    "plot_mean": False,
-    "plot_channel": False,
-    "plot_bsp": False,
-    "plot_extrainfo": False,
-    "plot_demark": False,
-    "plot_marker": False,
-    "plot_rsi": False,
-    "plot_kdj": False,
-    "plot_segbsp": True,
-    "plot_boll": True
+        "plot_kline_combine": True,
+        "plot_bi": True,
+        "plot_seg": True,
+        "plot_eigen": True,
+        "plot_segseg": False,
+        "plot_segzs": True,
+        "plot_zs": True,
+        "plot_macd": True,
+        "plot_mean": False,
+        "plot_channel": False,
+        "plot_bsp": True,
+        "plot_extrainfo": False,
+        "plot_demark": False,
+        "plot_marker": False,
+        "plot_rsi": False,
+        "plot_kdj": False,
+        "plot_segbsp": True,
+        "plot_boll": True
+    },
+    KL_TYPE.K_30M: {
+    "plot_kline": True,
+        "plot_kline_combine": True,
+        "plot_bi": True,
+        "plot_seg": True,
+        "plot_eigen": True,
+        "plot_segseg": False,
+        "plot_segzs": True,
+        "plot_zs": True,
+        "plot_macd": False,
+        "plot_mean": False,
+        "plot_channel": False,
+        "plot_bsp": False,
+        "plot_extrainfo": False,
+        "plot_demark": False,
+        "plot_marker": False,
+        "plot_rsi": False,
+        "plot_kdj": False,
+        "plot_segbsp": True,
+        "plot_boll": False
+    },
+    KL_TYPE.K_5M: {
+    "plot_kline": True,
+        "plot_kline_combine": True,
+        "plot_bi": True,
+        "plot_seg": True,
+        "plot_eigen": True,
+        "plot_segseg": False,
+        "plot_segzs": True,
+        "plot_zs": True,
+        "plot_macd": False,
+        "plot_mean": False,
+        "plot_channel": False,
+        "plot_bsp": False,
+        "plot_extrainfo": False,
+        "plot_demark": False,
+        "plot_marker": False,
+        "plot_rsi": False,
+        "plot_kdj": False,
+        "plot_segbsp": True,
+        "plot_boll": False
+},
 }
 
 plot_para = {
@@ -57,7 +100,7 @@ plot_para = {
     "bi": {
         # "show_num": True,
         # "disp_end": True,
-        "sub_lv_cnt": 30,
+        "sub_lv_cnt": 20,
         "facecolor": 'green'
     },
     "figure": {

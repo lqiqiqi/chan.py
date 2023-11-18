@@ -94,6 +94,16 @@ class Futu(CCommonStockApi):
     def do_close(cls):
         cls.quote_ctx.close()
 
+    @classmethod
+    def get_stock_name(cls, code):
+        cls.do_init()
+        rs = cls.quote_ctx.request_history_kline(code, max_count=10)
+        name = '股票名称查询错误，股票开头应该为HK/SH/SZ'
+        if rs[0] == 0:
+            name = rs[1].loc[0, 'name']
+        cls.do_close()
+        return name
+
     def __convert_type(self):
         _dict = {
             KL_TYPE.K_DAY: KLType.K_DAY,
