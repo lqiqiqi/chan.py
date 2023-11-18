@@ -87,7 +87,7 @@ def upload_image(image_path, access_token):
     return response.content
 
 
-def cal_chan_image(code, save_image_path='../TestImage/feishu'):
+def cal_chan_image(code, save_image_path='./TestImage/feishu'):
     # 创建北京时区对象
     beijing_tz = timezone(timedelta(hours=8))
     # 获取北京时间的当前时间
