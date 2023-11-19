@@ -4,6 +4,7 @@ from Chan import CChan
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
 from DataAPI.FuTuAPI import Futu
+from Debug.check_is_1_3_bp import check_is_1_3_bsp
 from Plot.AnimatePlotDriver import CAnimateDriver
 from Plot.PlotDriver import CPlotDriver
 
@@ -148,15 +149,21 @@ def get_image_api():
     else:
         return jsonify({'message': 'wrong code'})
 
-    # # 删除文件夹中的图片
-    # folder_path = '../TestImage/feishu/'  # 将这里替换为你的文件夹路径
-    #
-    # for file_name in os.listdir(folder_path):
-    #     file_path = os.path.join(folder_path, file_name)
-    #     if os.path.isfile(file_path):
-    #         os.remove(file_path)
-    #     elif os.path.isdir(file_path):
-    #         shutil.rmtree(file_path)
+
+@app.route('/check_is_1_3_bsp', methods=['GET'])
+@auth.login_required
+def check_is_1_3_bsp_api():
+    code = request.args.get('code', '')
+    date_time = request.args.get('date_time', '')
+    if code != '':
+        try:
+            check_res = check_is_1_3_bsp(code, date_time)
+        except Exception as e:
+            msg = e
+            return jsonify({'message': f'check failed {msg}'})
+        return jsonify({'message': check_res})
+    else:
+        return jsonify({'message': 'wrong code'})
 
 
 if __name__ == '__main__':
