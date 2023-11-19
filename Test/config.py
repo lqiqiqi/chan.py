@@ -21,8 +21,8 @@ chan_config = {
         "macd_algo": "peak",
         "bs_type": '1,2,1p,3a,2s,3b',
         "print_warning": True,
-        # "zs_algo": "normal",
-        "zs_algo": "over_seg"
+        "zs_algo": "normal",
+        # "zs_algo": "over_seg"
 }
 
 plot_config = {KL_TYPE.K_DAY: {
