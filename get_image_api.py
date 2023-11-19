@@ -2,7 +2,7 @@ from datetime import datetime, timedelta, timezone
 
 from Chan import CChan
 from ChanConfig import CChanConfig
-from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE
+from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE, BSP_TYPE
 from DataAPI.FuTuAPI import Futu
 from Debug.check_is_1_3_bp import check_is_1_3_bsp
 from Plot.AnimatePlotDriver import CAnimateDriver
@@ -20,7 +20,8 @@ from flask_httpauth import HTTPBasicAuth
 # from flask_cors import CORS
 
 
-from Test.config import chan_config, plot_config, plot_para
+from Test.config import plot_config, plot_para, Config
+
 
 app = Flask(__name__)
 # CORS(app)
@@ -100,7 +101,8 @@ def cal_chan_image(code, save_image_path='./TestImage/feishu'):
     end_time = now_date
     data_src = DATA_SRC.FUTU
     lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M, KL_TYPE.K_5M]
-
+    config_object = Config()
+    chan_config = config_object.read_chan_config
     config = CChanConfig(chan_config)
 
     chan = CChan(
@@ -124,7 +126,6 @@ def cal_chan_image(code, save_image_path='./TestImage/feishu'):
         plot_driver.figure.savefig(image_path)
 
     return image_path
-
 
 @app.route('/get_image', methods=['GET'])
 @auth.login_required

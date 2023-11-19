@@ -5,25 +5,31 @@
 # @File    : config.py
 from Common.CEnum import KL_TYPE
 
-chan_config = {
-        "bi_strict": False,
-        "bi_fx_check": "loss",
-        "bi_algo": "normal",
-        "bi_end_is_peak": False,
-        "one_bi_zs": False,
-        "triger_step": False,
-        "skip_step": 0,
-        # "divergence_rate": float("inf"),
-        "bsp2_follow_1": False,
-        "bsp3_follow_1": False,
-        "min_zs_cnt": 0,
-        "bs1_peak": True,
-        "macd_algo": "peak",
-        "bs_type": '1,2,1p,3a,2s,3b',
-        "print_warning": True,
-        "zs_algo": "normal",
-        # "zs_algo": "over_seg"
-}
+class Config:
+    def __init__(self):
+        self._chan_config = {
+            "bi_strict": True,
+            "bi_fx_check": "loss",
+            "bi_algo": "normal",
+            "bi_end_is_peak": False,
+            "one_bi_zs": False,
+            "triger_step": False,
+            "skip_step": 0,
+            # "divergence_rate": float("inf"),
+            "bsp2_follow_1": False,
+            "bsp3_follow_1": False,
+            "min_zs_cnt": 0,
+            "bs1_peak": True,
+            "macd_algo": "peak",
+            "bs_type": '1,2,1p,3a,2s,3b',
+            "print_warning": True,
+            "zs_algo": "normal",
+            # "zs_algo": "over_seg"
+        }
+
+    @property
+    def read_chan_config(self):
+        return self._chan_config
 
 plot_config = {KL_TYPE.K_DAY: {
     "plot_kline": True,
