@@ -161,10 +161,10 @@ def check_is_1_3_bsp_api():
             check_res = check_is_1_3_bsp(code, date_time)
         except Exception as e:
             msg = e
-            return jsonify({'message': f'check failed {msg}'})
-        return jsonify({'message': check_res})
+            return jsonify({'result': False, 'message': f'{msg}'})
+        return jsonify(check_res)
     else:
-        return jsonify({'message': 'wrong code'})
+        return jsonify({'result': False, 'message': 'wrong code'})
 
 
 if __name__ == '__main__':
