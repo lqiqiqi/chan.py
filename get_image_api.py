@@ -4,7 +4,7 @@ from Chan import CChan
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE, BSP_TYPE
 from DataAPI.FuTuAPI import Futu
-from Debug.check_is_1_3_bp import check_is_1_3_bsp
+from Debug.check_is_1_3_bp import check_is_1_3_bsp, check_top_fx
 from Plot.AnimatePlotDriver import CAnimateDriver
 from Plot.PlotDriver import CPlotDriver
 
@@ -165,6 +165,24 @@ def check_is_1_3_bsp_api():
         return jsonify(check_res)
     else:
         return jsonify({'result': False, 'message': 'wrong code'})
+
+
+@app.route('/check_top_fx', methods=['GET'])
+@auth.login_required
+def check_top_fx_api():
+    code = request.args.get('code', '')
+    date_time = request.args.get('date_time', '')
+    if code != '':
+        try:
+            check_res = check_top_fx(code, date_time)
+        except Exception as e:
+            msg = e
+            return jsonify({'result': False, 'message': f'{msg}'})
+        return jsonify(check_res)
+    else:
+        return jsonify({'result': False, 'message': 'wrong code'})
+
+
 
 
 if __name__ == '__main__':
