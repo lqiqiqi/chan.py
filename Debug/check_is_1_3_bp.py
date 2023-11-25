@@ -21,7 +21,7 @@ def check_top_fx(code, date):
     begin_time = begin_date
     end_time = date
     data_src = DATA_SRC.BAO_STOCK
-    lv_list = [KL_TYPE.K_30M, KL_TYPE.K_5M]
+    lv_list = [KL_TYPE.K_DAY]
 
     config_object = Config()
     chan_config = config_object.read_chan_config
@@ -37,7 +37,7 @@ def check_top_fx(code, date):
         autype=AUTYPE.QFQ,
     )
 
-    last_fx = next((item.fx for item in reversed(chan.kl_datas[KL_TYPE.K_30M].lst) if item.fx != FX_TYPE.UNKNOWN),
+    last_fx = next((item.fx for item in reversed(chan.kl_datas[KL_TYPE.K_DAY].lst) if item.fx != FX_TYPE.UNKNOWN),
                    FX_TYPE.TOP)
     if last_fx == FX_TYPE.TOP:
         return {'result': True, 'message': 'sell because of top fx'}
