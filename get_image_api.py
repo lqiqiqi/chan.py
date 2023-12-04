@@ -31,7 +31,7 @@ auth = HTTPBasicAuth()
 @auth.verify_password
 def verify_password(username, password):
     # 在此处添加您的验证逻辑，例如检查数据库中的用户名和密码
-    if username == 'user' and password == '123456':
+    if username == 'user' and password == 'vDdQvauvN4jXF7EIyMRaB2QUcG6zAOBX':
         return username
     return None
 
