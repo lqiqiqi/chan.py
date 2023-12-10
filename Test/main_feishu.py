@@ -12,12 +12,13 @@ import json
 import requests
 from requests_toolbelt import MultipartEncoder
 
-from Test.config import chan_config, plot_config, plot_para
+from Test.config import plot_config, plot_para, Config
 
 code_dict = {
-    'HK.00700': '腾讯',
-    'HK.800000': '恒生指数',
-    'SH.513300': '纳指etf',
+    # 'HK.00700': '腾讯',
+    # 'HK.800000': '恒生指数',
+    'HK.800700': '恒生科技',
+    # 'SH.513300': '纳指etf',
     # 'HK.09868': '小鹏',
     # 'HK.03690': '美团',
     # 'HK.09618': '京东',
@@ -100,6 +101,8 @@ def cal_chan_image(code, save_image_path='../TestImage/feishu'):
     data_src = DATA_SRC.FUTU
     lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M, KL_TYPE.K_5M]
 
+    config_object = Config()
+    chan_config = config_object.read_chan_config
     config = CChanConfig(chan_config)
 
     chan = CChan(

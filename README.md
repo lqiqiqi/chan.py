@@ -527,6 +527,7 @@ else:  # 绘制动画
     - DATA_SRC.FUTU：富途
     - DATA_SRC.BAO_STOCK：BaoStock(默认)
     - DATA_SRC.CCXT：ccxt
+    - DATA_SRC.CSV: csv（具体可以看内部实现）
     - "custom:文件名:类名"：自定义解析器
         - 框架默认提供一个 demo 为："custom: OfflineDataAPI.CStockFileReader"
         - 自己开发参考下文『自定义开发-数据接入』
@@ -737,6 +738,8 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
 - plot_tradeinfo：绘制配置的额外信息（在另一根 y 轴上），默认为 False
 - ploy_marker: 添加自定义文本标记
 - ploy_demark: 绘制Demark指标
+- ploy_rsi: 绘制rsi指标
+- ploy_kdj: 绘制kdj指标
 
 其中这个参数有几种写法：
 - 字典：比如`{"plot_bi": True, "plot_seg": True}`
@@ -936,7 +939,7 @@ CPlotDriver 和 CAnimateDriver 参数，用于控制绘制哪些元素
 - rsi: RSI指标
     - color: 颜色，默认为b
 
-- kdj: RSI指标
+- kdj: KDJ指标
     - k_color: K指标颜色，默认为orange
     - d_color: D指标颜色，默认为blue
     - j_color: J指标颜色，默认为pink

@@ -7,6 +7,7 @@ class DATA_SRC(Enum):
     CCXT = auto()
     FUTU = auto()
     YFINANCE = auto()
+    CSV = auto()
 
 
 class KL_TYPE(Enum):
