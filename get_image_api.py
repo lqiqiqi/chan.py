@@ -89,8 +89,53 @@ def upload_image(image_path, access_token):
     return response.content
 
 
-def cal_chan_image(code, save_image_path='./TestImage/feishu'):
+def cal_us_chan_image(code, interval, save_image_path='./TestImage/feishu'):
     # 创建北京时区对象
+    beijing_tz = timezone(timedelta(hours=-5))
+    # 获取北京时间的当前时间
+    now_beijing = datetime.now(beijing_tz)
+    if interval == '1m':
+        begin_date = (now_beijing - timedelta(days=6)).strftime('%Y-%m-%d')
+        lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_1M]
+    elif interval == '5m':
+        begin_date = (now_beijing - timedelta(days=58)).strftime('%Y-%m-%d')
+        lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_5M]
+    elif interval == '30m':
+        begin_date = (now_beijing - timedelta(days=58)).strftime('%Y-%m-%d')
+        lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M]
+    # now_date = now_beijing.strftime('%Y-%m-%d')
+
+    begin_time = begin_date
+    # end_time = now_date
+    data_src = DATA_SRC.YFINANCE
+    config_object = Config()
+    chan_config = config_object.read_chan_config
+    config = CChanConfig(chan_config)
+
+    chan = CChan(
+        code=code,
+        begin_time=begin_time,
+        # end_time=end_time,
+        data_src=data_src,
+        lv_list=lv_list,
+        config=config,
+        autype=AUTYPE.QFQ,
+    )
+
+    if not config.triger_step:
+        plot_driver = CPlotDriver(
+            chan,
+            plot_config=plot_config,
+            plot_para=plot_para,
+        )
+        # plot_driver.figure.show()
+        image_path = f'{save_image_path}/{code.split(".")[-1]}.jpg'
+        plot_driver.figure.savefig(image_path)
+
+    return image_path
+
+
+def cal_chan_image(code, save_image_path='./TestImage/feishu'):
     beijing_tz = timezone(timedelta(hours=8))
     # 获取北京时间的当前时间
     now_beijing = datetime.now(beijing_tz)
@@ -151,6 +196,29 @@ def get_image_api():
         return jsonify({'message': 'wrong code'})
 
 
+@app.route('/get_us_image', methods=['GET'])
+@auth.login_required
+def get_us_image():
+    code = request.args.get('code', '')
+    interval = request.args.get('interval', '')
+    access_token = get_token()
+    if code != '':
+        try:
+            image_path = cal_us_chan_image(code, interval)
+            res = upload_image(image_path, access_token)
+            res = json.loads(res)
+        except Exception as e:
+            msg = e
+            return jsonify({'message': f'get image failed {msg}'})
+
+        if res['code'] == 0:
+            send_msg(res['data']['image_key'], type='image')
+
+        return jsonify({'message': 'get image success'})
+    else:
+        return jsonify({'message': 'wrong code'})
+
+
 @app.route('/check_is_1_3_bsp', methods=['GET'])
 @auth.login_required
 def check_is_1_3_bsp_api():
@@ -183,7 +251,5 @@ def check_top_fx_api():
         return jsonify({'result': False, 'message': 'wrong code'})
 
 
-
-
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', debug=True, port=80)
+    app.run(host='0.0.0.0', debug=True, port=3329)

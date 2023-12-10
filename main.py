@@ -6,12 +6,11 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import plot_config, plot_para, Config
 
 if __name__ == "__main__":
-    code = "sh.603496"
-    begin_time = "2023-10-16"
-    end_time = "2023-11-16"
-    data_src = DATA_SRC.BAO_STOCK
-    # lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M, KL_TYPE.K_5M]
-    lv_list = [KL_TYPE.K_5M]
+    code = "SPY"
+    begin_time = "2023-12-03"
+    end_time = "2023-12-10"
+    data_src = DATA_SRC.YFINANCE
+    lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_1M]
 
     config_object = Config()
     chan_config = config_object.read_chan_config
@@ -26,7 +25,7 @@ if __name__ == "__main__":
         config=config,
         autype=AUTYPE.QFQ,
     )
-    bsp_list = chan.get_seg_bsp(idx=0)
+    # bsp_list = chan.get_seg_bsp(idx=0)
 
     if not config.triger_step:
         plot_driver = CPlotDriver(

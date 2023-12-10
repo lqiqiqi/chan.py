@@ -6,6 +6,7 @@ class DATA_SRC(Enum):
     BAO_STOCK = auto()
     CCXT = auto()
     FUTU = auto()
+    YFINANCE = auto()
 
 
 class KL_TYPE(Enum):

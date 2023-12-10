@@ -24,6 +24,9 @@ def GetStockAPI(src):
     if src == DATA_SRC.FUTU:
         from DataAPI.FuTuAPI import Futu
         _dict[DATA_SRC.FUTU] = Futu
+    if src == DATA_SRC.YFINANCE:
+        from DataAPI.YFinanceAPI import YF
+        _dict[DATA_SRC.YFINANCE] = YF
     if src in _dict:
         return _dict[src]
     if src.find("custom:") < 0:

@@ -94,6 +94,27 @@ plot_config = {KL_TYPE.K_DAY: {
         "plot_segbsp": True,
         "plot_boll": False
 },
+    KL_TYPE.K_1M: {
+    "plot_kline": True,
+        "plot_kline_combine": True,
+        "plot_bi": True,
+        "plot_seg": True,
+        "plot_eigen": True,
+        "plot_segseg": False,
+        "plot_segzs": True,
+        "plot_zs": True,
+        "plot_macd": False,
+        "plot_mean": False,
+        "plot_channel": False,
+        "plot_bsp": False,
+        "plot_extrainfo": False,
+        "plot_demark": False,
+        "plot_marker": False,
+        "plot_rsi": False,
+        "plot_kdj": False,
+        "plot_segbsp": True,
+        "plot_boll": False
+}
 }
 
 plot_para = {
