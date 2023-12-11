@@ -6,10 +6,10 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import plot_config, plot_para, Config
 
 if __name__ == "__main__":
-    code = "SPY"
-    begin_time = "2023-12-03"
+    code = "HK.00700"
+    begin_time = "2023-11-01"
     end_time = "2023-12-10"
-    data_src = DATA_SRC.YFINANCE
+    data_src = DATA_SRC.FUTU
     lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_1M]
 
     config_object = Config()

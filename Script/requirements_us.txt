@@ -8,10 +8,6 @@ charset-normalizer==3.3.2
 click==8.1.7
 contourpy==1.2.0
 cycler==0.12.1
-dash==2.14.1
-dash-core-components==2.0.0
-dash-html-components==2.0.0
-dash-table==5.0.0
 decorator==5.1.1
 executing==2.0.1
 Flask==3.0.0

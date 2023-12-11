@@ -139,13 +139,13 @@ def cal_chan_image(code, save_image_path='./TestImage/feishu'):
     beijing_tz = timezone(timedelta(hours=8))
     # 获取北京时间的当前时间
     now_beijing = datetime.now(beijing_tz)
-    begin_date = (now_beijing - timedelta(days=300)).strftime('%Y-%m-%d')
+    begin_date = (now_beijing - timedelta(days=70)).strftime('%Y-%m-%d')
     now_date = now_beijing.strftime('%Y-%m-%d')
 
     begin_time = begin_date
     end_time = now_date
     data_src = DATA_SRC.FUTU
-    lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_30M, KL_TYPE.K_5M]
+    lv_list = [KL_TYPE.K_30M, KL_TYPE.K_5M, KL_TYPE.K_1M]
     config_object = Config()
     chan_config = config_object.read_chan_config
     config = CChanConfig(chan_config)
@@ -171,6 +171,7 @@ def cal_chan_image(code, save_image_path='./TestImage/feishu'):
         plot_driver.figure.savefig(image_path)
 
     return image_path
+
 
 @app.route('/get_image', methods=['GET'])
 @auth.login_required

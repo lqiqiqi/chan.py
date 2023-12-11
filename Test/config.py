@@ -24,12 +24,14 @@ class Config:
             "bs_type": '1,2,1p,3a,2s,3b',
             "print_warning": True,
             "zs_algo": "normal",
+            "mean_metrics": [5, 60]
             # "zs_algo": "over_seg"
         }
 
     @property
     def read_chan_config(self):
         return self._chan_config
+
 
 plot_config = {KL_TYPE.K_DAY: {
     "plot_kline": True,
@@ -61,8 +63,8 @@ plot_config = {KL_TYPE.K_DAY: {
         "plot_segseg": False,
         "plot_segzs": True,
         "plot_zs": True,
-        "plot_macd": False,
-        "plot_mean": False,
+        "plot_macd": True,
+        "plot_mean": True,
         "plot_channel": False,
         "plot_bsp": False,
         "plot_extrainfo": False,

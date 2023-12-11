@@ -109,6 +109,7 @@ class Futu(CCommonStockApi):
             KL_TYPE.K_DAY: KLType.K_DAY,
             KL_TYPE.K_WEEK: KLType.K_WEEK,
             KL_TYPE.K_MON: KLType.K_MON,
+            KL_TYPE.K_1M: KLType.K_1M,
             KL_TYPE.K_5M: KLType.K_5M,
             KL_TYPE.K_15M: KLType.K_15M,
             KL_TYPE.K_30M: KLType.K_30M,
