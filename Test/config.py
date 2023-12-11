@@ -24,7 +24,7 @@ class Config:
             "bs_type": '1,2,1p,3a,2s,3b',
             "print_warning": True,
             "zs_algo": "normal",
-            "mean_metrics": [5, 60]
+            "mean_metrics": [60]
             # "zs_algo": "over_seg"
         }
 
@@ -129,7 +129,7 @@ plot_para = {
     "bi": {
         # "show_num": True,
         # "disp_end": True,
-        "sub_lv_cnt": 20,
+        "sub_lv_cnt": 30,
         "facecolor": 'green'
     },
     "figure": {
