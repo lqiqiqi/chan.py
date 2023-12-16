@@ -204,7 +204,8 @@ class CChan:
             raise CChanException("最高级别没有获得任何数据", ErrCode.NO_DATA)
 
     def set_klu_parent_relation(self, parent_klu, kline_unit, cur_lv, lv_idx):
-        if self.conf.kl_data_check and kltype_lte_day(cur_lv) and kltype_lte_day(self.lv_list[lv_idx-1]):
+        if self.conf.kl_data_check and kltype_lte_day(cur_lv) and kltype_lte_day(self.lv_list[lv_idx-1]) and \
+                self.data_src != DATA_SRC.YFINANCE:
             self.check_kl_consitent(parent_klu, kline_unit)
         parent_klu.add_children(kline_unit)
         kline_unit.set_parent(parent_klu)
