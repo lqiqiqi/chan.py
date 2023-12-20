@@ -18,8 +18,11 @@ from sklearn.neural_network import MLPRegressor
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler
 
+from config import Config
+
 if __name__ == "__main__":
     """
+    模型预测
     """
 
     model = joblib.load('../Model/09868_nn.pkl')
@@ -34,71 +37,9 @@ if __name__ == "__main__":
     data_src = DATA_SRC.FUTU
     lv_list = [KL_TYPE.K_DAY]
 
-    config = CChanConfig({
-        "triger_step": True,  # 打开开关！
-        "bi_strict": False,
-        "bi_fx_check": "loss",
-        "bi_algo": "normal",
-        "bi_end_is_peak": False,
-        "one_bi_zs": False,
-        "skip_step": 0,
-        "divergence_rate": float("inf"),
-        "bsp2_follow_1": False,
-        "bsp3_follow_1": False,
-        "min_zs_cnt": 0,
-        "bs1_peak": False,
-        "macd_algo": "peak",
-        "max_bs2_rate": 0.618,
-        "bs_type": '1,2,1p,3a,2s,3b',
-        "print_warning": True,
-        "zs_algo": "normal",
-    })
-    # {
-    #     "triger_step": True,  # 打开开关！
-    #     "divergence_rate": 0.8,
-    #     "min_zs_cnt": 1,
-    # }
-    plot_config = {
-        "plot_kline": True,
-        "plot_kline_combine": True,
-        "plot_bi": True,
-        "plot_seg": True,
-        "plot_eigen": False,
-        "plot_segseg": False,
-        "plot_segzs": True,
-        "plot_zs": True,
-        "plot_macd": True,
-        "plot_mean": False,
-        "plot_channel": False,
-        "plot_bsp": True,
-        "plot_extrainfo": False,
-        "plot_demark": False,
-        "plot_marker": True,
-        "plot_rsi": False,
-        "plot_kdj": False,
-        "plot_segbsp": True
-    }
-
-    plot_para = {
-        "seg": {
-            # "plot_trendline": True,
-            "sub_lv_cnt": None
-        },
-        "bi": {
-            # "show_num": True,
-            # "disp_end": True,
-            # "sub_lv_cnt": None
-        },
-        "figure": {
-            "x_range": 400,
-        },
-        "marker": {
-            # "markers": {  # text, position, color
-            #     '2023/06/01': ('marker here', 'up', 'red'),
-            #     '2023/06/08': ('marker here', 'down')
-            # },
-        }
-    }
+    config_object = Config()
+    chan_config = config_object.read_chan_config
+    config = CChanConfig(chan_config)
 
     chan = CChan(
         code=code,

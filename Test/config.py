@@ -23,7 +23,27 @@ class Config:
             "macd_algo": "peak",
             "bs_type": '1,2,1p,3a,2s,3b',
             "print_warning": True,
-            "zs_algo": "normal",
+            "zs_algo": "auto",
+            "mean_metrics": [60]
+            # "zs_algo": "over_seg"
+        }
+        self._chan_config_trigger_step = {
+            "bi_strict": True,
+            "bi_fx_check": "loss",
+            "bi_algo": "normal",
+            "bi_end_is_peak": False,
+            "one_bi_zs": False,
+            "triger_step": True,
+            "skip_step": 0,
+            # "divergence_rate": float("inf"),
+            "bsp2_follow_1": False,
+            "bsp3_follow_1": False,
+            "min_zs_cnt": 0,
+            "bs1_peak": True,
+            "macd_algo": "peak",
+            "bs_type": '1,2,1p,3a,2s,3b',
+            "print_warning": True,
+            "zs_algo": "auto",
             "mean_metrics": [60]
             # "zs_algo": "over_seg"
         }
@@ -31,6 +51,10 @@ class Config:
     @property
     def read_chan_config(self):
         return self._chan_config
+
+    @property
+    def read_chan_config_trigger_step(self):
+        return self._chan_config_trigger_step
 
 
 plot_config = {KL_TYPE.K_DAY: {
