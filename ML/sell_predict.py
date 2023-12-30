@@ -6,13 +6,15 @@
 
 
 import json
-import os
 import sys
 import time
 from typing import Dict, TypedDict
 
 import pandas as pd
 import xgboost as xgb
+
+sys.path.append('/root/chan.py')
+
 
 from BuySellPoint.BS_Point import CBS_Point
 from Chan import CChan
@@ -25,12 +27,6 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import Config
 from get_image_api import send_msg, get_token, upload_image
 
-
-folder_path = '/root/chan.py'
-for item in os.listdir(folder_path):
-    item_path = os.path.join(folder_path, item)
-    if os.path.isdir(item_path):
-        sys.path.append(item_path)
 
 def kelly_cangwei(p):
     """
