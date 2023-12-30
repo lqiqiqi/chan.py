@@ -21,10 +21,10 @@ class Config:
             "min_zs_cnt": 0,
             "bs1_peak": True,
             "macd_algo": "peak",
-            "bs_type": '1,2,1p,3a,2s,3b',
+            "bs_type": '1,2,1p,3a,3b,2s,3s',
             "print_warning": True,
             "zs_algo": "auto",
-            "mean_metrics": [60]
+            "mean_metrics": [30,60]
             # "zs_algo": "over_seg"
         }
         self._chan_config_trigger_step = {
@@ -41,10 +41,13 @@ class Config:
             "min_zs_cnt": 0,
             "bs1_peak": True,
             "macd_algo": "peak",
-            "bs_type": '1,2,1p,3a,2s,3b',
+            "bs_type": '1,2,1p,3a,2s,3b,3s',  # 2s一般比较容易买错，一般不加
             "print_warning": True,
             "zs_algo": "auto",
-            "mean_metrics": [60]
+            "mean_metrics": [30, 60],
+            "cal_kdj": True,
+            "cal_rsi": True,
+            "cal_vol_change": True
             # "zs_algo": "over_seg"
         }
 

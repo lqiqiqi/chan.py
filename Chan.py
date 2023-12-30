@@ -295,3 +295,9 @@ class CChan:
             return sorted(self[idx].seg_bs_point_lst.lst, key=lambda x: x.klu.time)
         assert len(self.lv_list) == 1
         return sorted(self[0].seg_bs_point_lst.lst, key=lambda x: x.klu.time)
+
+    def get_seg_bsp(self, idx=None) -> List[CBS_Point]:
+        if idx is not None:
+            return sorted(self[idx].seg_bs_point_lst.lst, key=lambda x: x.klu.time)
+        assert len(self.lv_list) == 1
+        return sorted(self[0].seg_bs_point_lst.lst, key=lambda x: x.klu.time)

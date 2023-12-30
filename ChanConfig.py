@@ -11,6 +11,8 @@ from Math.KDJ import KDJ
 from Math.MACD import CMACD
 from Math.RSI import RSI
 from Math.TrendModel import CTrendModel
+from Math.VOC import VOC
+from Math.VOMA import VOMA
 from Seg.SegConfig import CSegConfig
 from ZS.ZSConfig import CZSConfig
 
@@ -55,6 +57,7 @@ class CChanConfig:
         self.cal_demark = conf.get("cal_demark", False)
         self.cal_rsi = conf.get("cal_rsi", False)
         self.cal_kdj = conf.get("cal_kdj", False)
+        self.cal_vol_change = conf.get("cal_vol_change", False)
         self.rsi_cycle = conf.get("rsi_cycle", 14)
         self.kdj_cycle = conf.get("kdj_cycle", 9)
         self.demark_config = conf.get("demark", {
@@ -100,6 +103,9 @@ class CChanConfig:
             res.append(RSI(self.rsi_cycle))
         if self.cal_kdj:
             res.append(KDJ(self.kdj_cycle))
+        if self.cal_vol_change:
+            res.append(VOC())
+            res.append(VOMA())
         return res
 
     def set_bsp_config(self, conf):

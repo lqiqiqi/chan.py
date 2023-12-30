@@ -10,6 +10,8 @@ from Math.KDJ import KDJ
 from Math.MACD import CMACD, CMACD_item
 from Math.RSI import RSI
 from Math.TrendModel import CTrendModel
+from Math.VOC import VOC
+from Math.VOMA import VOMA
 
 from .TradeInfo import CTradeInfo
 
@@ -130,6 +132,10 @@ class CKLine_Unit:
                 self.rsi = metric_model.add(self.close)
             elif isinstance(metric_model, KDJ):
                 self.kdj = metric_model.add(self.high, self.low, self.close)
+            elif isinstance(metric_model, VOC):
+                self.voc = metric_model.add(self.trade_info.metric['volume'])
+            elif isinstance(metric_model, VOMA):
+                self.voma = metric_model.add(self.trade_info.metric['volume'])
 
     def get_parent_klc(self):
         assert self.sup_kl is not None

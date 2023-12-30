@@ -68,7 +68,7 @@ class Futu(CCommonStockApi):
         fields = "time_key,open,high,low,close"
 
         autype_dict = {AUTYPE.QFQ: AuType.QFQ, AUTYPE.HFQ: AuType.HFQ, AUTYPE.NONE: AuType.NONE}
-        field_list = [KL_FIELD.DATE_TIME, KL_FIELD.OPEN, KL_FIELD.HIGH, KL_FIELD.LOW, KL_FIELD.CLOSE]
+        field_list = [KL_FIELD.DATE_TIME, KL_FIELD.OPEN, KL_FIELD.HIGH, KL_FIELD.LOW, KL_FIELD.CLOSE, KL_FIELD.TRADE_VOL]
         rs = self.quote_ctx.request_history_kline(
             code=self.code,
             start=self.begin_date,

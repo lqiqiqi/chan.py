@@ -288,6 +288,26 @@ class CBSPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
             'bsp3_bi_amp': bsp3_bi.amp(),
         }
         self.add_bs(bs_type=BSP_TYPE.T3A, bi=bsp3_bi, relate_bsp1=real_bsp1, feature_dict=feature_dict)  # type: ignore
+        self.treat_bsp3s_after(seg_list, bi_list, bsp3_bi, real_bsp1)
+
+    def treat_bsp3s_after(self,
+                           seg_list, bi_list, bsp3_bi, real_bsp1
+        ):
+        bias = 2
+        while bsp3_bi.idx + bias < len(bi_list):
+            bsp3s_bi = bi_list[bsp3_bi.idx + bias]
+            if bsp3s_bi.seg_idx != bsp3_bi.seg_idx and (
+                    bsp3s_bi.seg_idx < len(seg_list) - 1 or seg_list[bsp3_bi.seg_idx].is_sure):
+                break
+            # if bias == 2:
+            #     if not has_overlap(bsp3_bi._low(), bsp3_bi._high(), bsp3s_bi._low(), bsp3s_bi._high()):
+            #         break
+            #     _low = max([bsp3_bi._low(), bsp3s_bi._low()])
+            #     _high = min([bsp3_bi._high(), bsp3s_bi._high()])
+            # elif not has_overlap(_low, _high, bsp3s_bi._low(), bsp3s_bi._high()):
+            #     break
+            self.add_bs(bs_type=BSP_TYPE.T3S, bi=bsp3s_bi, relate_bsp1=real_bsp1, feature_dict={})  # type: ignore
+            bias += 2
 
     def treat_bsp3_before(
         self,
@@ -321,7 +341,27 @@ class CBSPointList(Generic[LINE_TYPE, LINE_LIST_TYPE]):
                 'bsp3_bi_amp': bsp3_bi.amp(),
             }
             self.add_bs(bs_type=BSP_TYPE.T3B, bi=bsp3_bi, relate_bsp1=real_bsp1, feature_dict=feature_dict)  # type: ignore
+            self.treat_bsp3s_before(seg_list, bi_list, bsp3_bi, real_bsp1)
             break
+
+    def treat_bsp3s_before(self,
+                           seg_list, bi_list, bsp3_bi, real_bsp1
+        ):
+        bias = 2
+        while bsp3_bi.idx + bias < len(bi_list):
+            bsp3s_bi = bi_list[bsp3_bi.idx + bias]
+            if bsp3s_bi.seg_idx != bsp3_bi.seg_idx and (
+                    bsp3s_bi.seg_idx < len(seg_list) - 1 or seg_list[bsp3_bi.seg_idx].is_sure):
+                break
+            # if bias == 2:
+            #     if not has_overlap(bsp3_bi._low(), bsp3_bi._high(), bsp3s_bi._low(), bsp3s_bi._high()):
+            #         break
+            #     _low = max([bsp3_bi._low(), bsp3s_bi._low()])
+            #     _high = min([bsp3_bi._high(), bsp3s_bi._high()])
+            # elif not has_overlap(_low, _high, bsp3s_bi._low(), bsp3s_bi._high()):
+            #     break
+            self.add_bs(bs_type=BSP_TYPE.T3S, bi=bsp3s_bi, relate_bsp1=real_bsp1, feature_dict={})  # type: ignore
+            bias += 2
 
     def getLastestBspList(self) -> List[CBS_Point[LINE_TYPE]]:
         if len(self.lst) == 0:

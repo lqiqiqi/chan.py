@@ -22,6 +22,7 @@ def GetColumnNameFromFieldList(fileds: str):
         "High": DATA_FIELD.FIELD_HIGH,
         "Low": DATA_FIELD.FIELD_LOW,
         "Close": DATA_FIELD.FIELD_CLOSE,
+        "Volume": DATA_FIELD.FIELD_VOLUME
     }
     return [_dict[x] for x in fileds.split(",")]
 
@@ -64,7 +65,7 @@ class YF(CCommonStockApi):
 
     def get_kl_data(self):
         autype_dict = {AUTYPE.QFQ: True, AUTYPE.HFQ: True, AUTYPE.NONE: False}
-        fields = "Time,Open,High,Low,Close"
+        fields = "Time,Open,High,Low,Close,Volume"
         rs = yf.download(
             tickers=self.code,
             start=self.begin_date,
@@ -76,6 +77,8 @@ class YF(CCommonStockApi):
             raise Exception("没有获取到数据")
         rs = rs.reset_index(drop=False, names='Time')
         rs['Time'] = rs['Time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+        for field in ['Open', 'High', 'Low', 'Close']:
+            rs[field] = rs[field].round(3)
         for i in range(len(rs)):
             yield CKLine_Unit(create_item_dict(rs.iloc[i, :].to_list(), GetColumnNameFromFieldList(fields)))
 
