@@ -57,3 +57,4 @@ wcwidth==0.2.9
 Werkzeug==3.0.1
 zipp==3.17.0
 yfinance
+xgboost

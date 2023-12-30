@@ -8,6 +8,7 @@
 import json
 import time
 from typing import Dict, TypedDict
+import sys
 
 import pandas as pd
 import xgboost as xgb
@@ -23,6 +24,7 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import Config
 from get_image_api import send_msg, get_token, upload_image
 
+sys.path.append('/root/chan.py')
 
 def kelly_cangwei(p):
     """
