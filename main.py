@@ -6,11 +6,11 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import plot_config, plot_para, Config
 
 if __name__ == "__main__":
-    code = "HK.00700"
-    begin_time = "2023-11-01"
-    end_time = "2023-12-10"
-    data_src = DATA_SRC.FUTU
-    lv_list = [KL_TYPE.K_DAY, KL_TYPE.K_1M]
+    code = "^IXIC"
+    begin_time = "2020-01-01"
+    end_time = "2023-01-01"
+    data_src = DATA_SRC.YFINANCE
+    lv_list = [KL_TYPE.K_DAY]
 
     config_object = Config()
     chan_config = config_object.read_chan_config

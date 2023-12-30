@@ -10,7 +10,9 @@ from typing import Dict, TypedDict
 
 import xgboost as xgb
 import numpy as np
+from sklearn.datasets import load_svmlight_file
 from sklearn.metrics import roc_auc_score
+from sklearn.model_selection import train_test_split
 
 from Chan import CChan
 from ChanConfig import CChanConfig
@@ -70,12 +72,13 @@ def sell_stragety_feature(last_klu, cur_lv_chan):
         "kd": last_klu.kdj.k - last_klu.kdj.d,
         "k": last_klu.kdj.k,
         "voc": last_klu.voc,
-        # "ma60": last_klu.close - last_klu.trend[TREND_TYPE.MEAN][60],
+        "ma10": last_klu.trend[TREND_TYPE.MEAN][5] - last_klu.trend[TREND_TYPE.MEAN][10],
+        "ma20": last_klu.trend[TREND_TYPE.MEAN][5] - last_klu.trend[TREND_TYPE.MEAN][20],
         "voma10": last_klu.trade_info.metric['volume'] - last_klu.voma.voma10,
         "voma_diff": last_klu.voma.voma_diff,
         "retrace_rate": (cur_lv_chan.bi_list[-1].get_begin_klu().low - last_klu.close)/cur_lv_chan.bi_list[-1].get_begin_klu().high if len(cur_lv_chan.bi_list)>0 else 0,
-        "recent_high_macd": last_klu.macd.macd - find_min_klu(cur_lv_chan).macd.macd,
-        "recent_high_divergence": (last_klu.macd.macd - find_min_klu(cur_lv_chan).macd.macd) /
+        "recent_low_macd": last_klu.macd.macd - find_min_klu(cur_lv_chan).macd.macd,
+        "recent_low_divergence": (last_klu.macd.macd - find_min_klu(cur_lv_chan).macd.macd) /
                                   (last_klu.low - find_min_klu(cur_lv_chan).low + 0.01),
     }
 
@@ -94,14 +97,6 @@ def train_sell_model(code, begin_time, end_time):
     config_object = Config()
     chan_config = config_object.read_chan_config_trigger_step
     config = CChanConfig(chan_config)
-    # config = CChanConfig({
-    #     "triger_step": True,  # 打开开关！
-    #     "mean_metrics": [60],
-    #     "cal_kdj": True,
-    #     "cal_rsi": True,
-    #     "cal_vol_change": True
-    # })
-
 
     chan = CChan(
         code=code,
@@ -135,8 +130,8 @@ def train_sell_model(code, begin_time, end_time):
         ):
             # 假如策略是：买卖点分形第三元素出现时交易
             bsp_dict[last_bsp.klu.idx] = {
-                # "feature": last_bsp.features,
-                "feature": CFeatures({}),
+                "feature": last_bsp.features,
+                # "feature": CFeatures({}),
                 "is_buy": last_bsp.is_buy,
                 "open_time": last_bsp.klu.time,
             }
@@ -172,33 +167,57 @@ def train_sell_model(code, begin_time, end_time):
         # meta保存下来，实盘预测时特征对齐用
         fid.write(json.dumps(feature_meta))
 
-    dtrain = xgb.DMatrix(f"sell_feature_{code}.libsvm?format=libsvm")  # load sample
+    # 调参数
+    X, y = load_svmlight_file(f"sell_feature_{code}.libsvm")    # load sample
+
+    X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
+
+    # Convert to DMatrix
+    dtrain = xgb.DMatrix(X_train, label=y_train)
+    dtest = xgb.DMatrix(X_test, label=y_test)
     print(np.unique(dtrain.get_label(), return_counts=True))
-    param = {'max_depth': 4, 'eta': 0.3, 'objective': 'binary:logistic', 'eval_metric': 'auc', 'scale_pos_weight': 3}
+
+    # Define parameters
+    if code == 'IWM':
+        param = {'max_depth': 4, 'eta': 0.3, 'objective': 'binary:logistic', 'eval_metric': 'auc',
+                 'scale_pos_weight': 3}
+    else:
+        param = {'max_depth': 3, 'eta': 0.3, 'objective': 'binary:logistic', 'eval_metric': 'auc',
+                 'scale_pos_weight': 3.2}
+
+    # Train model
     evals_result = {}
     bst = xgb.train(
         param,
         dtrain=dtrain,
-        num_boost_round=15,
-        evals=[(dtrain, "train")],
+        num_boost_round=1000,
+        evals=[(dtest, "test")],
+        evals_result=evals_result,
+        early_stopping_rounds=10,
+        verbose_eval=True,
+    )
+
+    # Evaluate model
+    preds = bst.predict(dtest)
+    auc = roc_auc_score(y_test, preds)
+    print(f"test AUC: {auc}")
+
+    # 全量训练
+    dtotal = xgb.DMatrix(f"sell_feature_{code}.libsvm?format=libsvm")  # load sample
+
+    evals_result = {}
+    bst_total = xgb.train(
+        param,
+        dtrain=dtotal,
+        num_boost_round=5,
+        evals=[(dtotal, "train")],
         evals_result=evals_result,
         verbose_eval=True,
     )
-    bst.save_model(f"sell_model_{code}.json")
-
-    # Evaluate model
-    preds = bst.predict(dtrain)
-    auc = roc_auc_score(dtrain.get_label(), preds)
-    print(f"test AUC: {auc}")
-
-    # load model
-    model = xgb.Booster()
-    model.load_model(f"sell_model_{code}.json")
-    # predict
-    print(model.predict(dtrain))
+    bst_total.save_model(f"sell_model_{code}.json")
 
     plot(chan, plot_marker)
 
 
 if __name__ == '__main__':
-    train_sell_model(code='IWM', begin_time="2001-01-01", end_time="2023-01-01")
+    train_sell_model(code='QQQ', begin_time="2001-01-01", end_time="2023-01-01")

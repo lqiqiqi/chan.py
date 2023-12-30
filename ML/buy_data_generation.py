@@ -52,7 +52,7 @@ def plot(chan, plot_marker):
         plot_config=plot_config,
         plot_para=plot_para,
     )
-    plot_driver.save2img("label.png")
+    plot_driver.save2img("buy_label.png")
 
 
 def find_max_klu(cur_lv_chan):
@@ -75,10 +75,10 @@ def buy_stragety_feature(last_klu, cur_lv_chan, bsp_list):
         "kd": last_klu.kdj.k - last_klu.kdj.d,
         "k": last_klu.kdj.k,
         "voc": last_klu.voc,
-        "ma60": last_klu.close - last_klu.trend[TREND_TYPE.MEAN][60],
-        "ma30": last_klu.close - last_klu.trend[TREND_TYPE.MEAN][30],
+        "ma10": last_klu.trend[TREND_TYPE.MEAN][5] - last_klu.trend[TREND_TYPE.MEAN][10],
+        "ma20": last_klu.trend[TREND_TYPE.MEAN][5] - last_klu.trend[TREND_TYPE.MEAN][20],
         "recent_bar_avg": np.mean([(klu.close - klu.open) / klu.open for ckl in cur_lv_chan[-3:] for klu in ckl][-3:]), # 近期bar的长度，阴线为负
-        "is_buy": 1 if last_bsp.is_buy else 0,
+        # "is_buy": 1 if last_bsp.is_buy else 0,
         "voma10": last_klu.trade_info.metric['volume'] - last_klu.voma.voma10,
         "voma_diff": last_klu.voma.voma_diff,
         "retrace_rate": (cur_lv_chan.bi_list[-1].get_begin_klu().low - last_klu.close) / cur_lv_chan.bi_list[
@@ -93,7 +93,7 @@ def buy_stragety_feature(last_klu, cur_lv_chan, bsp_list):
     }
 
 
-if __name__ == "__main__":
+def train_buy_model(code, begin_time, end_time):
     """
     本demo主要演示如何记录策略产出的买卖点的特征
     然后将这些特征作为样本，训练一个模型(以XGB为demo)
@@ -101,8 +101,6 @@ if __name__ == "__main__":
 
     请注意，demo训练预测都用的是同一份数据，这是不合理的，仅仅是为了演示
     """
-    code = "SPY"
-    begin_time = "2001-01-01"
     end_time = "2023-01-01"
     data_src = DATA_SRC.YFINANCE
     lv_list = [KL_TYPE.K_DAY]
@@ -170,7 +168,7 @@ if __name__ == "__main__":
     feature_meta = {}  # 特征meta
     cur_feature_idx = 0
     plot_marker = {}
-    fid = open("buy_feature.libsvm", "w")
+    fid = open(f"buy_feature_{code}.libsvm", "w")
     for bsp_klu_idx, feature_info in bsp_dict.items():
         label = int(bsp_klu_idx in bsp_academy)  # 以买卖点识别是否准确为label，如果在bsp_academy中即为正确（后视镜看它是否正确）
         features = []  # List[(idx, value)]
@@ -185,11 +183,11 @@ if __name__ == "__main__":
         plot_marker[feature_info["open_time"].to_str()] = ("√" if label else "×", "down" if feature_info["is_buy"] else "up")
     fid.close()
 
-    with open("buy_feature.meta", "w") as fid:
+    with open(f"buy_feature_{code}.meta", "w") as fid:
         # meta保存下来，实盘预测时特征对齐用
         fid.write(json.dumps(feature_meta))
 
-    X, y = load_svmlight_file("buy_feature.libsvm")    # load sample
+    X, y = load_svmlight_file(f"buy_feature_{code}.libsvm")    # load sample
     print(np.unique(y, return_counts=True))
 
     X_train, X_test, y_train, y_test = train_test_split(X, y, test_size=0.2, random_state=123)
@@ -199,7 +197,12 @@ if __name__ == "__main__":
     dtest = xgb.DMatrix(X_test, label=y_test)
 
     # Define parameters
-    param = {'max_depth': 5, 'eta': 0.05, 'objective': 'binary:logistic', 'eval_metric': 'auc', 'scale_pos_weight': 3.6}
+    if code == 'QQQ':
+        param = {'max_depth': 6, 'eta': 0.1, 'objective': 'binary:logistic', 'eval_metric': 'auc',
+                 'scale_pos_weight': 3.6}
+    elif code == 'IWM':
+        param = {'max_depth': 5, 'eta': 0.3, 'objective': 'binary:logistic', 'eval_metric': 'auc',
+                 'scale_pos_weight': 3.6}
 
     # Train model
     evals_result = {}
@@ -212,17 +215,28 @@ if __name__ == "__main__":
         early_stopping_rounds=10,
         verbose_eval=True,
     )
-    bst.save_model("buy_model.json")
 
     # Evaluate model
     preds = bst.predict(dtest)
     auc = roc_auc_score(y_test, preds)
     print(f"test AUC: {auc}")
 
-    check_data = xgb.DMatrix("buy_feature.libsvm?format=libsvm")  # load sample
-    model = xgb.Booster()
-    model.load_model("buy_model.json")
-    # predict
-    print(model.predict(check_data))
+    # 全量训练
+    dtotal = xgb.DMatrix(f"buy_feature_{code}.libsvm?format=libsvm")  # load sample
+
+    evals_result = {}
+    bst_total = xgb.train(
+        param,
+        dtrain=dtotal,
+        num_boost_round=8,
+        evals=[(dtotal, "train")],
+        evals_result=evals_result,
+        verbose_eval=True,
+    )
+    bst_total.save_model(f"buy_model_{code}.json")
 
     plot(chan, plot_marker)
+
+
+if __name__ == '__main__':
+    train_buy_model(code='IWM', begin_time="2001-01-01", end_time="2023-01-01")

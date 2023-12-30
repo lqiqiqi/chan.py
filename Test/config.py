@@ -44,7 +44,7 @@ class Config:
             "bs_type": '1,2,1p,3a,2s,3b,3s',  # 2s一般比较容易买错，一般不加
             "print_warning": True,
             "zs_algo": "auto",
-            "mean_metrics": [30, 60],
+            "mean_metrics": [5, 10, 20],
             "cal_kdj": True,
             "cal_rsi": True,
             "cal_vol_change": True
