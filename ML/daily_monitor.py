@@ -9,26 +9,18 @@
 # 如果判断现在是震荡行情，则同样使用安全的仓位采用震荡策略在合适的开仓点进行交易，并按照金大第三定律设置止损位。
 # 出现反向波动后，根据金大第二定律判断行情是否出现趋势暂时中止而进入了震荡阶段，然后按照震荡阶段进行处理。
 
-import json
 import sys
 import time
-from typing import Dict, TypedDict
 
-import pandas as pd
 import numpy as np
 
 sys.path.append('/root/chan.py')
 
-from BuySellPoint.BS_Point import CBS_Point
 from Chan import CChan
 from ChanConfig import CChanConfig
-from ChanModel.Features import CFeatures
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE, TREND_TYPE
-from Common.CTime import CTime
-from ML.buy_data_generation import buy_stragety_feature
-from Plot.PlotDriver import CPlotDriver
 from Test.config import Config
-from get_image_api import send_msg, get_token, upload_image
+from get_image_api import send_msg
 
 
 def ma_rank(last_klu):
@@ -87,11 +79,6 @@ def daily_indicator(last_klu, cur_lv_chan):
     klu_list = [klu for ckl in cur_lv_chan[-15:] for klu in ckl]
     ma_cross_str = ma_cross(klu_list)
     return_str += ', ' + ma_cross_str
-    return_str += '。\n' + '震荡需要在压力位之中；趋势需要在走势通道中；周线如果是趋势状态，不要做逆趋势方向 \n'
-    return_str += 'b. 缠轮判断方法，看图笔有没有改变方向，是否可能构成笔中枢 \n'
-
-    return_str += '2. 趋势行情开仓策略（1买最好明确形成趋势即穿越ma60，2、3买、突破买）/ 震荡行情开仓策略（下档开仓，上档止盈）'
-    return_str += ' 3. 设置好撤单前有效的止损，最重要的原则是不要亏损' + ' 4. 趋势平仓策略 / 震荡平仓策略'
     return return_str
 
 
@@ -121,13 +108,23 @@ def daily_cal(code, begin_time, end_time=None):
 
     return_str = code
     return_str += daily_indicator(last_klu, cur_lv_chan)
-    print(return_str)
+    return return_str
 
 
 if __name__ == '__main__':
+    return_str = ''
     for code in ['QQQ', 'IWM']:
         try:
-            daily_cal(code=code, begin_time="2023-01-01")
+            return_str += daily_cal(code=code, begin_time="2023-01-01")
         except:
             time.sleep(5)
-            daily_cal(code=code, begin_time="2023-01-01")
+            return_str += daily_cal(code=code, begin_time="2023-01-01")
+        return_str += '\n'
+
+    return_str += '\n' + '震荡需要在压力位之中；趋势需要在走势通道中；周线如果是趋势状态，不要做逆趋势方向 \n'
+    return_str += 'b. 缠轮判断方法，看图笔有没有改变方向，是否可能构成笔中枢 \n'
+
+    return_str += '2. 趋势行情开仓策略（1买最好明确形成趋势即穿越ma60，2、3买、突破买）/ 震荡行情开仓策略（下档开仓，上档止盈）\n'
+    return_str += '3. 设置好撤单前有效的止损，最重要的原则是不要亏损' + ' 4. 趋势平仓策略 / 震荡平仓策略'
+    print(return_str)
+    send_msg(return_str, type='text')
