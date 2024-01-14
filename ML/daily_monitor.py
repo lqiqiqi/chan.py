@@ -13,6 +13,9 @@ import sys
 import time
 
 import numpy as np
+import pandas as pd
+
+from candlestick import candlestick
 
 sys.path.append('/root/chan.py')
 
@@ -69,6 +72,66 @@ def ma_cross(klu_list):
     return return_str
 
 
+def find_true_columns(df):
+    results = []
+    df = df.dropna()
+    # 从最后一行开始倒推
+    for index in df.index:
+        # 获取布尔值列
+        bool_columns = df.drop(["time", 'open', 'high', 'low', 'close'], axis=1)
+        # 查找当前行中为True的列
+        true_columns = bool_columns.columns[bool_columns.loc[index]].tolist()
+        # 如果找到了True的列
+        if true_columns:
+            # 获取"time"字段值
+            time_value = df.loc[index, "time"]
+            # 将结果添加到结果列表中
+            results.append((time_value, true_columns))
+    res_str = ''
+    for tup in results:
+        # 使用str()函数将tuple转换为string
+        str_tup = str(tup)
+        # 打印转换后的string
+        res_str += ' '
+        res_str += str_tup
+    return res_str
+
+
+def candle_indicator(klu_list):
+    data = {
+        "open": [p.open for p in klu_list],
+        "high": [p.high for p in klu_list],
+        'low': [p.low for p in klu_list],
+        'close': [p.close for p in klu_list],
+        'time': [p.time.to_str() for p in klu_list]
+    }
+    df = pd.DataFrame(data)
+    candles_df = df.sort_values(by='time', ascending=True)
+    candles_df = candlestick.inverted_hammer(candles_df, target='倒锤子线（底部看涨，需要验证次日收市高于锤子线实体）')
+    candles_df = candlestick.doji_star(candles_df, target='十字星')
+    candles_df = candlestick.bearish_harami(candles_df, target='看跌孕线')
+    candles_df = candlestick.bullish_harami(candles_df, target='看涨孕线')
+    candles_df = candlestick.dark_cloud_cover(candles_df, target='乌云盖顶')
+    candles_df = candlestick.doji(candles_df, target='十字线')
+    candles_df = candlestick.dragonfly_doji(candles_df, target='蜻蜓十字线（看涨）')
+    candles_df = candlestick.hanging_man(candles_df, target='上吊线（顶部看跌，需要验证次日收市低于上吊线实体）')
+    candles_df = candlestick.gravestone_doji(candles_df, target='墓碑十字线（看跌）')
+    candles_df = candlestick.bearish_engulfing(candles_df, target='看跌吞没')
+    candles_df = candlestick.bullish_engulfing(candles_df, target='看涨吞没')
+    candles_df = candlestick.hammer(candles_df, target='锤子(底部看反转)')
+    candles_df = candlestick.morning_star(candles_df, target='启明星')
+    candles_df = candlestick.morning_star_doji(candles_df, target='启明十字')
+    candles_df = candlestick.piercing_pattern(candles_df, target='穿刺')
+    candles_df = candlestick.rain_drop(candles_df, target='雨滴（趋势受阻）')
+    candles_df = candlestick.rain_drop_doji(candles_df, target='雨滴十字线（趋势受阻）')
+    candles_df = candlestick.star(candles_df, target='星线（趋势受阻）')
+    candles_df = candlestick.shooting_star(candles_df, target='流星线（看跌）')
+    candles_df = candlestick.window(candles_df, target='跳空（形成支撑）')
+    res_str = find_true_columns(candles_df)
+    return res_str
+
+
+
 def daily_indicator(last_klu, cur_lv_chan):
     return_str = f' 最新数据日期 {last_klu.time.to_str()} \n'
     return_str += '1. 判断当前应该是趋势还是震荡 \n'
@@ -79,6 +142,9 @@ def daily_indicator(last_klu, cur_lv_chan):
     klu_list = [klu for ckl in cur_lv_chan[-15:] for klu in ckl]
     ma_cross_str = ma_cross(klu_list)
     return_str += ', ' + ma_cross_str
+    candle_str = candle_indicator(klu_list)
+    return_str += '\n'
+    return_str += candle_str
     return return_str
 
 
@@ -119,7 +185,7 @@ if __name__ == '__main__':
         except:
             time.sleep(5)
             return_str += daily_cal(code=code, begin_time="2023-01-01")
-        return_str += '\n'
+        return_str += '\n\n'
 
     return_str += '\n' + '震荡需要在压力位之中；趋势需要在走势通道中；周线如果是趋势状态，不要做逆趋势方向 \n'
     return_str += 'b. 缠轮判断方法，看图笔有没有改变方向，是否可能构成笔中枢 \n'
