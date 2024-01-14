@@ -15,10 +15,9 @@ import time
 import numpy as np
 import pandas as pd
 
-from candlestick import candlestick
-
 sys.path.append('/root/chan.py')
 
+from candlestick import candlestick
 from Chan import CChan
 from ChanConfig import CChanConfig
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE, TREND_TYPE
