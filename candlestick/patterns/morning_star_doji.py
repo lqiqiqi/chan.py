@@ -26,10 +26,10 @@ class MorningStarDoji(CandlestickFinder):
         b_prev_low = b_prev_candle[self.low_column]
 
         return (b_prev_close < b_prev_open and
-                abs(b_prev_close - b_prev_open) / (b_prev_high - b_prev_low) >= 0.7 and
-                abs(prev_close - prev_open) / (prev_high - prev_low) < 0.1 and
+                abs(b_prev_close - b_prev_open) / (b_prev_high - b_prev_low + 0.0001) >= 0.7 and
+                abs(prev_close - prev_open) / (prev_high - prev_low + 0.0001) < 0.1 and
                 close > open and
-                abs(close - open) / (high - low) >= 0.7 and
+                abs(close - open) / (high - low + 0.0001) >= 0.7 and
                 b_prev_close > prev_close and
                 b_prev_close > prev_open and
                 prev_close < open and

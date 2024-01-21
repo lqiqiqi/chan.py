@@ -14,6 +14,7 @@ class Doji(CandlestickFinder):
         high = candle[self.high_column]
         low = candle[self.low_column]
 
-        return abs(close - open) / (high - low) < 0.1 and \
-               (high - max(close, open)) > (3 * abs(close - open)) and \
-               (min(close, open) - low) > (3 * abs(close - open))
+        # 实体超级小
+        return abs(close - open) / (high - low + 0.0001) < 0.1 and \
+               (high - max(close, open)) > (3 * abs(close - open + 0.0001)) and \
+               (min(close, open) - low) > (3 * abs(close - open + 0.0001))

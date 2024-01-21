@@ -59,3 +59,4 @@ zipp==3.17.0
 yfinance
 xgboost
 scikit-learn
+tigeropen

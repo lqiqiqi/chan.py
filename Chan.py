@@ -27,6 +27,12 @@ def GetStockAPI(src):
     if src == DATA_SRC.YFINANCE:
         from DataAPI.YFinanceAPI import YF
         _dict[DATA_SRC.YFINANCE] = YF
+    if src == DATA_SRC.CSV:
+        from DataAPI.csvAPI import CSV_API
+        _dict[DATA_SRC.CSV] = CSV_API
+    if src == DATA_SRC.Tiger:
+        from DataAPI.TigerAPI import Tiger
+        _dict[DATA_SRC.Tiger] = Tiger
     if src in _dict:
         return _dict[src]
     if src.find("custom:") < 0:

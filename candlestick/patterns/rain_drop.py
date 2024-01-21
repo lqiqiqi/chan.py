@@ -20,7 +20,7 @@ class RainDrop(CandlestickFinder):
         prev_low = prev_candle[self.low_column]
 
         return (prev_close < prev_open and # 昨天实体是跌的
-                abs(prev_close - prev_open) / (prev_high - prev_low) >= 0.7 and # 昨天实体较大
-                0.3 > abs(close - open) / (high - low) >= 0.1 and # 今天十字线
+                abs(prev_close - prev_open) / (prev_high - prev_low + 0.0001) >= 0.7 and # 昨天实体较大
+                0.3 > abs(close - open) / (high - low + 0.0001) >= 0.1 and # 今天十字线
                 prev_close > close and # 今天收盘之后更低
                 prev_close > open) # 开盘就比昨天收盘低了

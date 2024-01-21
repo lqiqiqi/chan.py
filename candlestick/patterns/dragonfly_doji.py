@@ -13,6 +13,6 @@ class DragonflyDoji(CandlestickFinder):
         high = candle[self.high_column]
         low = candle[self.low_column]
 
-        return abs(close - open) / (high - low) < 0.1 and \
-               (min(close, open) - low) > (3 * abs(close - open)) and \
-               (high - max(close, open)) < abs(close - open)
+        return abs(close - open) / (high - low + 0.0001) < 0.1 and \
+               (min(close, open) - low) > (3 * abs(close - open + 0.0001)) and \
+               (high - max(close, open)) < abs(close - open + 0.0001)

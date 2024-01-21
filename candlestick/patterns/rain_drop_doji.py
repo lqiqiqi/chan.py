@@ -20,8 +20,8 @@ class RainDropDoji(CandlestickFinder):
         prev_low = prev_candle[self.low_column]
 
         return (prev_close < prev_open and # 昨天跌
-                abs(prev_close - prev_open) / (prev_high - prev_low) >= 0.7 and # 昨天实体较大
-                abs(close - open) / (high - low) < 0.1 and # 今天实体较小
+                abs(prev_close - prev_open) / (prev_high - prev_low + 0.0001) >= 0.7 and # 昨天实体较大
+                abs(close - open) / (high - low + 0.0001) < 0.1 and # 今天实体较小
                 prev_close > close and
                 prev_close > open and
                 (high - max(close, open)) > (3 * abs(close - open)) and

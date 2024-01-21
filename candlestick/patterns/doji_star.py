@@ -21,8 +21,8 @@ class DojiStar(CandlestickFinder):
         prev_low = prev_candle[self.low_column]
 
         return prev_close > prev_open and \
-               abs(prev_close - prev_open) / (prev_high - prev_low) >= 0.7 and \
-               abs(close - open) / (high - low) < 0.1 and \
+               abs(prev_close - prev_open) / (prev_high - prev_low + 0.0001) >= 0.7 and \
+               abs(close - open) / (high - low + 0.0001) < 0.1 and \
                prev_close < close and \
                prev_close < open and \
                (high - max(close, open)) > (3 * abs(close - open)) and \
