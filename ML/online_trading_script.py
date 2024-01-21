@@ -4,13 +4,14 @@
 # @Author  : rockieluo
 # @File    : online_trading_script.py
 
-
 import json
 import os
 import sys
 import time
 from datetime import datetime
 from typing import Dict, TypedDict
+
+sys.path.append('/root/chan.py')
 
 import pandas as pd
 import numpy as np
@@ -24,9 +25,6 @@ from tigeropen.common.consts import SecurityType, Currency, Market
 from tigeropen.trade.trade_client import TradeClient
 
 from DataAPI.TigerAPI import Tiger
-
-sys.path.append('/root/chan.py')
-
 from BuySellPoint.BS_Point import CBS_Point
 from Chan import CChan
 from ChanConfig import CChanConfig
