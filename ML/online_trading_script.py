@@ -21,7 +21,7 @@ from tigeropen.common.util.contract_utils import stock_contract, future_contract
 from tigeropen.common.util.order_utils import market_order, trail_order
 from tigeropen.quote.quote_client import QuoteClient
 from tigeropen.tiger_open_config import TigerOpenClientConfig
-from tigeropen.common.consts import SecurityType, Currency, Market
+from tigeropen.common.consts import SecurityType, Currency, Market, BarPeriod
 from tigeropen.trade.trade_client import TradeClient
 
 from DataAPI.TigerAPI import Tiger
@@ -122,35 +122,47 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
 
         positions = trade_client.get_positions(sec_type=SecurityType.FUT, currency=Currency.ALL, market=Market.ALL)
         open_orders = trade_client.get_open_orders(sec_type=SecurityType.FUT, market=Market.ALL)
-        open_orders = [od for od in open_orders if od.contract.symbol == today_code]
+        open_orders = [od for od in open_orders if od.contract.identifier == today_code]
         filled_orders = trade_client.get_filled_orders(
             sec_type=SecurityType.FUT, market=Market.ALL, start_time=int(now_utc.timestamp() - 7 * 24 * 60 * 60)*1000,
             end_time=int(now_utc.timestamp())*1000)
-        filled_orders = [od for od in filled_orders if od.contract.symbol == today_code]
+        filled_orders = [od for od in filled_orders if od.contract.identifier == today_code]
 
         # 目前持有非当期合约，平仓
-        if is_string_in_list(code[:4], [pos.contract.symbol for pos in positions]) and \
-            today_code not in [pos.contract.symbol for pos in positions]:
+        if is_string_in_list(code[:4], [pos.contract.identifier for pos in positions]) and \
+            today_code not in [pos.contract.identifier for pos in positions]:
             for pos in positions:
-                if pos.contract.symbol != today_code:
-                    contract = future_contract(symbol=pos.contract.symbol, currency='USD')
+                if pos.contract.identifier != today_code:
+                    contract = future_contract(symbol=pos.contract.identifier, currency='USD')
                     # 生成订单对象
                     wrong_ctrt_month_order = market_order(account=client_config.account, contract=contract,
                                                           action='SELL', quantity=pos.quantity)
                     wrong_ctrt_month_oid = trade_client.place_order(wrong_ctrt_month_order)
                     print(f'wrong month contract, sell. wrong_ctrt_month_oid = {wrong_ctrt_month_oid}')
 
+        # 目前有持仓，判断是否为空单，是的话赶紧平仓
+        elif len(positions) > 0 and \
+                today_code in [pos.contract.identifier for pos in positions if pos.quantity < 0]:
+            for pos in positions:
+                if today_code == pos.contract.identifier and pos.quantity < 0:
+                    contract = future_contract(symbol=pos.contract.identifier, currency='USD')
+                    # 生成订单对象，这里原有quantity是负的，要*-1，
+                    close_order = market_order(account=client_config.account, contract=contract, action='BUY',
+                                               quantity=-1 * pos.quantity)
+                    close_oid = trade_client.place_order(close_order)
+                    print(f'why you have short position? close id = {close_oid}')
+
         # 目前无持仓（没有任何标的或者该标的不在持仓标的中）但是有未成交订单：马上撤销所有
-        elif (len(positions) == 0 or today_code not in [pos.contract.symbol for pos in positions]) \
+        elif (len(positions) == 0 or today_code not in [pos.contract.identifier for pos in positions]) \
                 and len(open_orders) > 0:
             for od in open_orders:
-                if today_code == od.contract.symbol:
+                if today_code == od.contract.identifier:
                     trade_client.cancel_order(id=od.id)
                     print('cancel open order')
 
         # 目前无持仓且无未成交开仓订单：判断有没有一条全新的刚好走完的5min bar，有的话加入chan对象，判断是否开仓，
         # 开仓连带固定比例止损单也一起提交；不开仓则继续等；开仓则记录订单id
-        elif (len(positions) == 0 or today_code not in [pos.contract.symbol for pos in positions]) \
+        elif (len(positions) == 0 or today_code not in [pos.contract.identifier for pos in positions]) \
                 and len(open_orders) == 0:
 
             last_klu = chan[0][-1][-1]
@@ -184,16 +196,20 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                 print(f'{cur_lv_chan[-1][-1].time}:trail id = {trail_oid}')
 
         # 目前有持仓且无市价卖出单：监控当前价格，如果价格濒临跌破成本，撤销原有止损单，提交一个市价卖出单；否则啥也不用做，等利润奔跑；
-        elif len(positions) > 0 and today_code in [pos.contract.symbol for pos in positions] and \
+        elif len(positions) > 0 and \
+                today_code in [pos.contract.identifier for pos in positions if pos.quantity > 0] and \
                 'MKT' not in [od.order_type for od in open_orders]:
+
             sent_buy_order = max(filled_orders, key=lambda x: x.trade_time)
             now_utc = int(datetime.now(pytz.utc).timestamp())
             # 判断是否成交以及是否过去15min了
             if sent_buy_order.filled > 0 and sent_buy_order.trade_time / 1000 + 15 * 60 < now_utc:
-                latest_price = quote_client.get_future_brief(identifiers=[code]).loc[0, 'latest_price']
+                latest_price = quote_client.get_future_bars(
+                    identifiers=today_code, begin_time=-1, end_time=-1, period=BarPeriod.ONE_MINUTE, limit=2
+                ).loc[0, 'close']
                 if latest_price < sent_buy_order.avg_fill_price + 0.5:
                     # 生成订单对象
-                    contract = future_contract(symbol=sent_buy_order.contract.symbol, currency='USD')
+                    contract = future_contract(symbol=sent_buy_order.contract.identifier, currency='USD')
                     # 撤销原止损单
                     trail_od_list = [od.id for od in open_orders if od.order_type == 'TRAIL']
                     if len(trail_od_list) > 0:
@@ -205,15 +221,16 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                     print(f'超过15min表现不佳，止损卖出, sell id {sell_oid}')
 
         # 目前有该标的持仓且有市价卖出单：如果该市价卖出单超过5s则撤销掉，并发出告警，一般市价就是一定要成交的。
-        elif len(positions) > 0 and today_code in [pos.contract.symbol for pos in positions] and \
+        elif len(positions) > 0 and today_code in [pos.contract.identifier for pos in positions] and \
                 'MKT' in [od.order_type for od in open_orders]:
             for od in open_orders:
-                if today_code == od.contract.symbol and od.order_type == 'MKT':
+                if today_code == od.contract.identifier and od.order_type == 'MKT':
                     trade_client.cancel_order(id=od.id)
                     print('has position and mkt order not filled, cancel open order')
 
         # 目前有持仓却没有止损单
-        elif len(positions) > 0 and today_code in [pos.contract.symbol for pos in positions] and \
+        elif len(positions) > 0 and \
+                today_code in [pos.contract.identifier for pos in positions if pos.quantity > 0] and \
                 'TRAIL' not in [od.order_type for od in open_orders]:
             contract = future_contract(symbol=today_code, currency='USD')
             # 移动止损订单
@@ -221,17 +238,6 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                 account=client_config.account, contract=contract, action='SELL', quantity=1, trailing_percent=0.2)
             new_trail_oid = trade_client.place_order(new_trail_order_obj)
             print(f'have position but no trail order, place order trail id = {new_trail_oid}')
-
-        # 目前有持仓，判断是否为空单，是的话赶紧平仓
-        elif len(positions) > 0:
-            for pos in positions:
-                if today_code == pos.contract.symbol and pos.quantity < 0:
-                    contract = future_contract(symbol=pos.contract.symbol, currency='USD')
-                    # 生成订单对象
-                    close_order = market_order(account=client_config.account, contract=contract, action='BUY',
-                                               quantity=pos.quantity)
-                    close_oid = trade_client.place_order(close_order)
-                    print(f'why you have short position? close id = {close_oid}')
 
         else:
             print(f'why you can enter here?')
