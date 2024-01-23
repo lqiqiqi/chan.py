@@ -55,10 +55,8 @@ def predict_bsp(model: xgb.Booster, last_bsp: CBS_Point, meta: Dict[str, int]):
     return model.predict(dtest)
 
 
-def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
-    """
-    本demo主要演示如何在实盘中把策略产出的买卖点，对接到demo5中训练好的离线模型上
-    """
+def buy_model_predict(code, begin_time, end_time):
+    send_msg(f'正常启动 {code} 程序', type='text')
     data_src = DATA_SRC.Tiger
     lv_list = [KL_TYPE.K_5M]
 
@@ -112,6 +110,7 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
         now_eastern = now_utc.astimezone(eastern)
         # 判断当前美东时间是否在17点到18点之间，如果是则停止运行
         if 17 <= now_eastern.hour < 18:
+            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} 正常关闭 {code} 程序", type='text')
             break
 
         # 查数据不断更新chan对象是一定要做的
@@ -132,13 +131,14 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
         if is_string_in_list(code[:4], [pos.contract.identifier for pos in positions]) and \
             today_code not in [pos.contract.identifier for pos in positions]:
             for pos in positions:
-                if pos.contract.identifier != today_code:
+                if pos.contract.identifier != today_code and code[:4] in pos.contract.identifier:
                     contract = future_contract(symbol=pos.contract.identifier, currency='USD')
                     # 生成订单对象
                     wrong_ctrt_month_order = market_order(account=client_config.account, contract=contract,
                                                           action='SELL', quantity=pos.quantity)
                     wrong_ctrt_month_oid = trade_client.place_order(wrong_ctrt_month_order)
                     print(f'wrong month contract, sell. wrong_ctrt_month_oid = {wrong_ctrt_month_oid}')
+                    send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现非当期合约，平仓", type='text')
 
         # 目前有持仓，判断是否为空单，是的话赶紧平仓
         elif len(positions) > 0 and \
@@ -151,14 +151,17 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                                                quantity=-1 * pos.quantity)
                     close_oid = trade_client.place_order(close_order)
                     print(f'why you have short position? close id = {close_oid}')
+                    send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现持有空单，平仓", type='text')
 
-        # 目前无持仓（没有任何标的或者该标的不在持仓标的中）但是有未成交订单：马上撤销所有
+        # 目前无持仓（没有任何标的或者该标的不在持仓标的中）但是有未成交的该标的订单：马上撤销所有
         elif (len(positions) == 0 or today_code not in [pos.contract.identifier for pos in positions]) \
                 and len(open_orders) > 0:
             for od in open_orders:
                 if today_code == od.contract.identifier:
                     trade_client.cancel_order(id=od.id)
                     print('cancel open order')
+                    send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现非当期合约，发现有未成交订单，撤销",
+                             type='text')
 
         # 目前无持仓且无未成交开仓订单：判断有没有一条全新的刚好走完的5min bar，有的话加入chan对象，判断是否开仓，
         # 开仓连带固定比例止损单也一起提交；不开仓则继续等；开仓则记录订单id
@@ -171,7 +174,7 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                 continue
             last_bsp = bsp_list[-1]
             cur_lv_chan = chan[0]
-
+            # print('recent klu time is ', last_klu.time.to_str(), 'recent price is ', last_klu.close, 'now time is ', now_eastern.strftime('%Y-%m-%d %H:%M:%S'))
             if cur_lv_chan[-3].idx != last_bsp.klu.klc.idx or last_bsp.klu.idx in treated_bsp_idx or \
                     not last_bsp.is_buy:
                 # 已经判断过了，分型还没形成，不是买点
@@ -181,6 +184,7 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
             # 买卖点打分，应该和demo5最后的predict结果完全一致才对
 
             pred_prob = predict_bsp(model, last_bsp, meta)[0]
+            # print('pred prob is ', pred_prob)
             treated_bsp_idx.add(last_bsp.klu.idx)
             if pred_prob > 0.5:
                 contract = future_contract(symbol=today_code, currency='USD')
@@ -194,6 +198,7 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                     account=client_config.account, contract=contract, action='SELL', quantity=1, trailing_percent=0.2)
                 trail_oid = trade_client.place_order(trail_order_obj)
                 print(f'{cur_lv_chan[-1][-1].time}:trail id = {trail_oid}')
+                send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序开仓", type='text')
 
         # 目前有持仓且无市价卖出单：监控当前价格，如果价格濒临跌破成本，撤销原有止损单，提交一个市价卖出单；否则啥也不用做，等利润奔跑；
         elif len(positions) > 0 and \
@@ -219,6 +224,7 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                                               quantity=1)
                     sell_oid = trade_client.place_order(sell_order)
                     print(f'超过15min表现不佳，止损卖出, sell id {sell_oid}')
+                    send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序触发15min止损", type='text')
 
         # 目前有该标的持仓且有市价卖出单：如果该市价卖出单超过5s则撤销掉，并发出告警，一般市价就是一定要成交的。
         elif len(positions) > 0 and today_code in [pos.contract.identifier for pos in positions] and \
@@ -227,6 +233,8 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                 if today_code == od.contract.identifier and od.order_type == 'MKT':
                     trade_client.cancel_order(id=od.id)
                     print('has position and mkt order not filled, cancel open order')
+                    send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现市价止损卖出单没有正常成交，撤销它",
+                             type='text')
 
         # 目前有持仓却没有止损单
         elif len(positions) > 0 and \
@@ -238,13 +246,17 @@ def buy_model_predict(code, begin_time, end_time, only_bsp, is_send):
                 account=client_config.account, contract=contract, action='SELL', quantity=1, trailing_percent=0.2)
             new_trail_oid = trade_client.place_order(new_trail_order_obj)
             print(f'have position but no trail order, place order trail id = {new_trail_oid}')
+            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现有持仓却没有止损单",
+                     type='text')
 
         else:
             print(f'why you can enter here?')
+            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现进入其他未知情况分支",
+                     type='text')
 
 
 if __name__ == '__main__':
     # 实盘设置开盘前5分钟启动，这里end_time设置为None，会自动拉最新的1000条数据来初始化
     code = 'MRTYmain'
     # '2024-01-19 16:50:00'
-    buy_model_predict(code=code, begin_time=None, end_time=None, only_bsp=True, is_send=False)
+    buy_model_predict(code=code, begin_time=None, end_time=None)
