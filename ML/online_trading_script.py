@@ -198,7 +198,7 @@ def buy_model_predict(code, begin_time, end_time):
                     account=client_config.account, contract=contract, action='SELL', quantity=1, trailing_percent=0.2)
                 trail_oid = trade_client.place_order(trail_order_obj)
                 print(f'{cur_lv_chan[-1][-1].time}:trail id = {trail_oid}')
-                send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序开仓", type='text')
+                send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序开仓，最新k线结束时间 {last_klu.time.to_str()}", type='text')
 
         # 目前有持仓且无市价卖出单：监控当前价格，如果价格濒临跌破成本，撤销原有止损单，提交一个市价卖出单；否则啥也不用做，等利润奔跑；
         elif len(positions) > 0 and \
