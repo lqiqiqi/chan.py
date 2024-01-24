@@ -8,6 +8,9 @@
 import json
 import math
 from typing import Dict, TypedDict
+import sys
+
+sys.path.append('/root/chan.py')
 
 import numpy as np
 import pandas as pd
