@@ -204,7 +204,7 @@ def train_buy_model(code, begin_time, end_time):
         #         last_bsp.is_buy:
         # 这里不能写or cur_lv_chan[-3].idx == last_bsp.klu.klc.idx，因为bsp_dict是按照bsp来存的，一个bsp特征是唯一的
 
-        if (cur_lv_chan[-3].idx == last_bsp.klu.klc.idx):
+        if last_bsp.klu.idx not in bsp_dict and cur_lv_chan[-2].idx == last_bsp.klu.klc.idx and last_bsp.is_buy:
             # 假如策略是：买卖点分形第三元素出现时交易
             bsp_dict[last_bsp.klu.idx] = {
                 "feature": last_bsp.features,
