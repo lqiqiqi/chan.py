@@ -26,6 +26,8 @@ from Plot.PlotDriver import CPlotDriver
 from Test.config import Config
 from candlestick import candlestick
 
+label_dict = {'MRTYmain': 5, 'MYMmain': 50}
+
 
 class T_SAMPLE_INFO(TypedDict):
     feature: CFeatures
@@ -182,7 +184,11 @@ def train_buy_model(code, begin_time, end_time):
     bsp_dict: Dict[int, T_SAMPLE_INFO] = {}  # 存储策略产出的bsp的特征
 
     # 跑策略，保存买卖点的特征
+    first_indx = 0
     for chan_snapshot in chan.step_load():
+        if first_indx < 1000:
+            first_indx += 1
+            continue
         last_klu = chan_snapshot[0][-1][-1]
         bsp_list = chan_snapshot.get_bsp()
         if not bsp_list:
@@ -232,6 +238,11 @@ def train_buy_model(code, begin_time, end_time):
     for ck in chan[KL_TYPE.K_5M]:
         for klu in ck:
             ck_idx_dict[klu.idx] = klu.close
+    bi_end_time = {bi.get_end_klu().idx: bi.get_end_klu().time.to_str() for bi in chan[0].bi_list}
+    ck_time_dict = {}
+    for ck in chan[KL_TYPE.K_5M]:
+        for klu in ck:
+            ck_time_dict[klu.idx] = klu.time.to_str()
 
     feature_meta = {}  # 特征meta
     cur_feature_idx = 0
@@ -240,7 +251,9 @@ def train_buy_model(code, begin_time, end_time):
     for bsp_klu_idx, feature_info in bsp_dict.items():
         # label = int(bsp_klu_idx in bsp_academy)  # 以买卖点识别是否准确为label，如果在bsp_academy中即为正确（后视镜看它是否正确）
         end_bi_indx = find_closest_larger_number(bsp_klu_idx, bi_end_list)
-        if (not end_bi_indx) or bi_end_dict[end_bi_indx] - ck_idx_dict[bsp_klu_idx] < 5:
+        # 该买点到该笔结束，至少要有多少的利润，才算正样本。可以参考np.percentile([bi.get_end_klu().close - bi.get_begin_klu().low for bi in chan[0].bi_list if bi.get_end_klu().close - bi.get_begin_klu().low > 0], 50)
+        # MYM
+        if (not end_bi_indx) or bi_end_dict[end_bi_indx] - ck_idx_dict[bsp_klu_idx] < label_dict[code]:
             label = 0
         else:
             # label = bi_end_dict[end_bi_indx] - ck_idx_dict[bsp_klu_idx]
@@ -272,12 +285,15 @@ def train_buy_model(code, begin_time, end_time):
     dtest = xgb.DMatrix(X_test, label=y_test)
 
     # Define parameters
-    if code == 'QQQ':
+    if code == 'MNQmain':
         param = {'max_depth': 6, 'eta': 0.1, 'objective': 'binary:logistic', 'eval_metric': 'auc',
                  'scale_pos_weight': 3.6}
     elif code == 'MRTYmain':
         param = {'max_depth': 30, 'eta': 0.1, 'objective': 'binary:logistic', 'eval_metric': 'auc',
-                 'scale_pos_weight': 9, 'subsample': 0.9}
+                 'scale_pos_weight': 3.3, 'subsample': 0.9}
+    else:
+        param = {'max_depth': 30, 'eta': 0.1, 'objective': 'binary:logistic', 'eval_metric': 'auc',
+                 'scale_pos_weight': 2.3, 'subsample': 0.9}
         # param = {'max_depth': 20, 'eta': 0.05, 'objective': 'reg:logistic', 'eval_metric': 'rmse'}
 
     # Train model
@@ -316,4 +332,4 @@ def train_buy_model(code, begin_time, end_time):
 
 
 if __name__ == '__main__':
-    train_buy_model(code='MRTYmain', begin_time="2022-01-01 00:00:00", end_time="2024-01-01 00:00:00")
+    train_buy_model(code='MYMmain', begin_time="2019-05-20 00:00:00", end_time="2024-01-18 00:00:00")

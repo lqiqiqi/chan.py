@@ -37,7 +37,7 @@ def parse_time_column(inp):
         minute = int(inp[14:16])
     else:
         raise Exception(f"unknown time column from baostock:{inp}")
-    return CTime(year, month, day, hour, minute)
+    return CTime(year, month, day, hour, minute, auto=False)
 
 
 class CSV_API(CCommonStockApi):
@@ -49,7 +49,7 @@ class CSV_API(CCommonStockApi):
             DATA_FIELD.FIELD_HIGH,
             DATA_FIELD.FIELD_LOW,
             DATA_FIELD.FIELD_CLOSE,
-            # DATA_FIELD.FIELD_VOLUME,
+            DATA_FIELD.FIELD_VOLUME,
             # DATA_FIELD.FIELD_TURNOVER,
             # DATA_FIELD.FIELD_TURNRATE,
         ]  # 每一列字段
@@ -58,7 +58,8 @@ class CSV_API(CCommonStockApi):
 
     def get_kl_data(self):
         cur_path = os.path.dirname(os.path.realpath(__file__))
-        file_path = f"{cur_path}/../{self.code}.csv"
+        # file_path = f"{cur_path}/../{self.code}.csv"
+        file_path = f"{cur_path}/../Test/data/{self.code}_5min_kline_for_chan_timeoffset.csv"
         if not os.path.exists(file_path):
             raise CChanException(f"file not exist: {file_path}", ErrCode.SRC_DATA_NOT_FOUND)
 
@@ -84,3 +85,14 @@ class CSV_API(CCommonStockApi):
     @classmethod
     def do_close(cls):
         pass
+
+    def __offset_to_end_time(self):
+        # 老虎证券的每个bar的时间是开始时间，把它偏移到结束时间（天级别以上不是）
+        _dict = {
+            KL_TYPE.K_1M: 60 * 1000,
+            KL_TYPE.K_5M: 5 * 60 * 1000,
+            KL_TYPE.K_15M: 15 * 60 * 1000,
+            KL_TYPE.K_30M: 30 * 60 * 1000,
+            KL_TYPE.K_60M: 60 * 60 * 1000,
+        }
+        return _dict[self.k_type]
