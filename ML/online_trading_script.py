@@ -164,7 +164,7 @@ def buy_model_predict(code, begin_time, end_time):
                              type='text')
 
         # 目前无持仓且无未成交开仓订单：判断有没有一条全新的刚好走完的5min bar，有的话加入chan对象，判断是否开仓，
-        # 开仓连带固定比例止损单也一起提交；不开仓则继续等；开仓则记录订单id
+        # 开仓连带固定比例止损单也一起提交；不开仓则继续等
         elif (len(positions) == 0 or today_code not in [pos.contract.identifier for pos in positions]) \
                 and len(open_orders) == 0:
 
@@ -175,7 +175,7 @@ def buy_model_predict(code, begin_time, end_time):
             last_bsp = bsp_list[-1]
             cur_lv_chan = chan[0]
             # print('recent klu time is ', last_klu.time.to_str(), 'recent price is ', last_klu.close, 'now time is ', now_eastern.strftime('%Y-%m-%d %H:%M:%S'))
-            if cur_lv_chan[-3].idx != last_bsp.klu.klc.idx or last_bsp.klu.idx in treated_bsp_idx or \
+            if cur_lv_chan[-2].idx != last_bsp.klu.klc.idx or last_bsp.klu.idx in treated_bsp_idx or \
                     not last_bsp.is_buy:
                 # 已经判断过了，分型还没形成，不是买点
                 continue
