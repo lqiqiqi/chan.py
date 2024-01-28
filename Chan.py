@@ -30,9 +30,12 @@ def GetStockAPI(src):
     if src == DATA_SRC.CSV:
         from DataAPI.csvAPI import CSV_API
         _dict[DATA_SRC.CSV] = CSV_API
-    if src == DATA_SRC.Tiger:
-        from DataAPI.TigerAPI import Tiger
-        _dict[DATA_SRC.Tiger] = Tiger
+    if src == DATA_SRC.TigerMock:
+        from DataAPI.TigerMockAPI import TigerMock
+        _dict[DATA_SRC.TigerMock] = TigerMock
+    if src == DATA_SRC.TigerReal:
+        from DataAPI.TigerRealAPI import TigerReal
+        _dict[DATA_SRC.TigerReal] = TigerReal
     if src in _dict:
         return _dict[src]
     if src.find("custom:") < 0:
