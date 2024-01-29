@@ -70,8 +70,8 @@ def buy_model_predict(code, begin_time, end_time):
     )
 
     model = xgb.Booster()
-    model.load_model(f"buy_model_{code}.json")
-    meta = json.load(open(f"buy_feature_{code}.meta", "r"))
+    model.load_model(f"buy_model_{code}_20240128_1.json")
+    meta = json.load(open(f"buy_feature_{code}_20240128_1.meta", "r"))
 
     treated_bsp_idx = set()
 
@@ -259,10 +259,11 @@ def buy_model_predict(code, begin_time, end_time):
 
 
 if __name__ == '__main__':
+    # 更改导入的特征计算模块、模型文件、特征文件
     # 实盘设置开盘前5分钟启动，这里end_time设置为None，会自动拉最新的1000条数据来初始化
     code = 'MNQmain'
     # '2024-01-19 16:50:00'
     try:
         buy_model_predict(code=code, begin_time=None, end_time=None)
     except Exception as e:
-        send_msg(e, type='text')
+        send_msg("出错了，请检查！", type='text')
