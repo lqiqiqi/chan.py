@@ -266,4 +266,4 @@ if __name__ == '__main__':
     try:
         buy_model_predict(code=code, begin_time=None, end_time=None)
     except Exception as e:
-        send_msg("出错了，请检查！", type='text')
+        send_msg(f"{str(e)} 出错了，请检查！", type='text')
