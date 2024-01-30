@@ -30,7 +30,7 @@ from get_image_api import send_msg
 fut_multiplier = {'MNQmain': 2, 'MRTYmain': 5, 'MYMmain': 0.5}
 trailing_percent = 0.1
 waiting_mins = 30
-threshold = 0.5
+threshold = 0.6
 
 
 def is_string_in_list(s, lst):
@@ -224,7 +224,7 @@ def buy_model_predict(code, begin_time, end_time):
                     sell_order = market_order(account=client_config.account, contract=contract, action='SELL',
                                               quantity=1)
                     sell_oid = trade_client.place_order(sell_order)
-                    print(f'超过15min表现不佳，止损卖出, sell id {sell_oid}')
+                    print(f'指定时间内表现不佳，止损卖出, sell id {sell_oid}')
                     send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序触发15min止损",
                              type='text')
 
