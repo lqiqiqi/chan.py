@@ -59,7 +59,7 @@ class CSV_API(CCommonStockApi):
     def get_kl_data(self):
         cur_path = os.path.dirname(os.path.realpath(__file__))
         # file_path = f"{cur_path}/../{self.code}.csv"
-        file_path = f"{cur_path}/../Test/data/{self.code}_5min_kline_for_chan_timeoffset.csv"
+        file_path = f"{cur_path}/../Test/data/{self.code}_{self.__kl_type_to_int()}min_kline_for_chan_timeoffset.csv"
         if not os.path.exists(file_path):
             raise CChanException(f"file not exist: {file_path}", ErrCode.SRC_DATA_NOT_FOUND)
 
@@ -96,3 +96,14 @@ class CSV_API(CCommonStockApi):
             KL_TYPE.K_60M: 60 * 60 * 1000,
         }
         return _dict[self.k_type]
+
+    def __kl_type_to_int(self):
+        _dict = {
+            KL_TYPE.K_1M: 1,
+            KL_TYPE.K_5M: 5,
+            KL_TYPE.K_15M: 15,
+            KL_TYPE.K_30M: 30,
+            KL_TYPE.K_60M: 60,
+        }
+        return _dict[self.k_type]
+

@@ -73,7 +73,7 @@ def parse_time_column_to_timestamp(inp):
         hour = int(inp[11:13])
         minute = int(inp[14:16])
     else:
-        raise Exception(f"unknown time column from futu:{inp}")
+        raise Exception(f"unknown time column:{inp}")
 
     # 创建datetime对象
     dt = datetime(year, month, day, hour, minute)

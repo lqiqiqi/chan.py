@@ -24,6 +24,7 @@ def GetColumnNameFromFieldList(fileds: str):
         "high": DATA_FIELD.FIELD_HIGH,
         "low": DATA_FIELD.FIELD_LOW,
         "close": DATA_FIELD.FIELD_CLOSE,
+        "volume": DATA_FIELD.FIELD_VOLUME
     }
     return [_dict[x] for x in fileds.split(",")]
 
@@ -65,7 +66,7 @@ class Futu(CCommonStockApi):
         super(Futu, self).__init__(code, k_type, begin_date, end_date, autype)
 
     def get_kl_data(self):
-        fields = "time_key,open,high,low,close"
+        fields = "time_key,open,high,low,close,volume"
 
         autype_dict = {AUTYPE.QFQ: AuType.QFQ, AUTYPE.HFQ: AuType.HFQ, AUTYPE.NONE: AuType.NONE}
         field_list = [KL_FIELD.DATE_TIME, KL_FIELD.OPEN, KL_FIELD.HIGH, KL_FIELD.LOW, KL_FIELD.CLOSE, KL_FIELD.TRADE_VOL]
