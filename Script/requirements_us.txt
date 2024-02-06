@@ -58,5 +58,8 @@ Werkzeug==3.0.1
 zipp==3.17.0
 yfinance
 xgboost
-scikit-learn
+scikit-learn==1.2.2
 tigeropen
+dill
+imbalanced-learn
+mlxtend
