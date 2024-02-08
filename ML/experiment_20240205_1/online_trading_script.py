@@ -32,7 +32,7 @@ from get_image_api import send_msg
 fut_multiplier = {'MNQmain': 2, 'MRTYmain': 5, 'MYMmain': 0.5}
 trailing_percent = 0.2
 waiting_mins = 15
-threshold = 0.6
+threshold = 0.5
 
 
 def is_string_in_list(s, lst):
