@@ -98,6 +98,7 @@ def buy_model_predict(code, begin_time, end_time):
     quote_client = data_src_instance.quote_client
     today_contract = quote_client.get_current_future_contract(code.strip('main'))  # 获取当期交易的标的
     today_code = today_contract.loc[0, 'contract_code']
+    last_buy_bi_idx = 0
 
     while True:
         time.sleep(5)
@@ -182,11 +183,11 @@ def buy_model_predict(code, begin_time, end_time):
                 continue
 
             # 买卖点打分，应该和demo5最后的predict结果完全一致才对
-            if cur_lv_chan[-3].idx == last_bsp.klu.klc.idx:
-                last_bsp.features.add_feat(buy_stragety_feature3(last_klu, cur_lv_chan, bsp_list))  # 开仓K线特征
-                pred_prob = predict_bsp(model3, last_bsp, meta3)[0]
-                which_klu_is_bsp = 3
-            elif cur_lv_chan[-4].idx == last_bsp.klu.klc.idx:
+            # if cur_lv_chan[-3].idx == last_bsp.klu.klc.idx:
+            #     last_bsp.features.add_feat(buy_stragety_feature3(last_klu, cur_lv_chan, bsp_list))  # 开仓K线特征
+            #     pred_prob = predict_bsp(model3, last_bsp, meta3)[0]
+            #     which_klu_is_bsp = 3
+            if cur_lv_chan[-4].idx == last_bsp.klu.klc.idx:
                 pred_prob = predict_bsp(model4, last_bsp, meta4)[0]
                 last_bsp.features.add_feat(buy_stragety_feature4(last_klu, cur_lv_chan, bsp_list))  # 开仓K线特征
                 which_klu_is_bsp = 4
