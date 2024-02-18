@@ -20,5 +20,5 @@ class VOC:
         self.vol_arr.append(vol)
         if len(self.vol_arr) > self.period:
             self.vol_arr.pop(0)
-        voc = (self.vol_arr[-1] - self.vol_arr[-2]) / self.vol_arr[-2] * 100
+        voc = (self.vol_arr[-1] - self.vol_arr[-2]) / (self.vol_arr[-2] + 0.001) * 100
         return voc

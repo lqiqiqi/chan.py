@@ -33,7 +33,7 @@ BARS_TOTAL_NUMBER = 700000
 
 # 每次请求bar的个数，系统限制每个symbol每次最多请求1200个bar.
 # number of bars per request, the system limits each symbol to a maximum of 1200 bars per request.
-BARS_BATCH_SIZE = 300
+BARS_BATCH_SIZE = 1200
 
 # 每次请求symbol的个数，系统限制每次最多请求50个symbol
 # number of symbols per request, the system limits each request to a maximum of 50 symbols.
@@ -44,7 +44,7 @@ SYMBOLS_BATCH_SIZE = 50
 REQUEST_INTERVAL = 3
 
 # 请求数据的时间频率
-time_period = 5
+time_period = 1
 
 
 class QuoteExamples(unittest.TestCase):
@@ -120,6 +120,7 @@ class QuoteExamples(unittest.TestCase):
         """
         # HK market
         symbol1 = 'MNQmain'
+        # symbol1 = 'MYMmain'
         symbols = [symbol1]
         timezone = 'US/Eastern'
 
@@ -128,6 +129,7 @@ class QuoteExamples(unittest.TestCase):
         # symbols = [symbol1, 'TSLA']
 
         end = int(datetime.datetime.today().timestamp() * 1000)
+        # end = 1699113600000
         history = pd.DataFrame()
         for i in range(0, BARS_TOTAL_NUMBER, BARS_BATCH_SIZE):
             if i + BARS_BATCH_SIZE <= BARS_TOTAL_NUMBER:
@@ -138,8 +140,29 @@ class QuoteExamples(unittest.TestCase):
             print(f'query {len(symbols)} symobls history, end_time:{end} -- {end_time}, limit:{limit}')
             # 此处请求分钟k线，其他周期可修改period参数.
             # This request is for the minute k line, for other periods, can change 'period' parameter
-            part = self._request_bars(symbols=symbols, period=BarPeriod.FIVE_MINUTES, end_time=end, bars_batch_size=BARS_BATCH_SIZE)
-            part[TIME] = part[TIME] + time_period * 60 * 1000
+            part = self._request_bars(symbols=symbols, period=BarPeriod.ONE_MINUTE, end_time=end, bars_batch_size=BARS_BATCH_SIZE)
+            if len(part) == 0:
+                # history_cp = history.copy()
+                # 重复多次执行下面的语句，把在交易时间段内连续缺失的数据补上
+                # history_cp['time'] = pd.to_datetime(history_cp['time'], unit='ms').dt.tz_localize('UTC').dt.tz_convert(timezone)
+                # history_cp = history_cp.set_index('time')
+                # history_cp = history_cp.resample('1T').asfreq()
+                # history_cp[['open', 'close', 'high', 'low']] = history_cp[['open', 'close', 'high', 'low']].interpolate(
+                #     method='ffill')
+                # history_cp['volume'].fillna(0, inplace=True)
+                # history_cp = history_cp.reset_index(drop=False)
+                # history_cp[DATE] = history_cp['time'].dt.strftime('%Y-%m-%d %H:%M:%S')
+                # # 找到所有的空值行
+                # is_na = history_cp.isna().any(axis=1)
+                # # 找到所有连续的空值行
+                # is_consecutive_na = is_na & is_na.shift(-1)
+                # # 删除连续的空值行
+                # history_cp = history_cp[~is_consecutive_na]
+
+                history = history[['time_str', 'open', 'high', 'low', 'close', 'volume']].iloc[::-1]
+                history.to_csv('data/MNQmain_1min_kline_for_chan_timeoffset.csv', index=False)
+                print('here')
+            part[TIME] = part[TIME] + time_period * 60 * 1000  # 老虎的bar是开始时间，把它偏移到结束时间
             part[DATE] = pd.to_datetime(part[TIME], unit='ms').dt.tz_localize('UTC').dt.tz_convert(timezone).dt.strftime('%Y-%m-%d %H:%M:%S')
             end = min(part[TIME]) - time_period * 60 * 1000  # 如果不减一下，有一条会重复
             history = pd.concat([history, part], axis=0)
@@ -177,6 +200,7 @@ class QuoteExamples(unittest.TestCase):
         for i in range(0, len(symbols), SYMBOLS_BATCH_SIZE):
             part = symbols[i:i + SYMBOLS_BATCH_SIZE]
             quote = quote_client.get_future_bars(part, period=period, end_time=end_time, limit=bars_batch_size)
+            # quote = quote_client.get_bars(part, period=period, end_time=end_time, limit=bars_batch_size)
             result = pd.concat([result, quote], axis=0)
             # to avoid rate limit
             time.sleep(REQUEST_INTERVAL)
