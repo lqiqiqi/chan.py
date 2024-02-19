@@ -145,8 +145,8 @@ def buy_model_predict(code, begin_time, end_time):
         last_bi = chan[0].bi_list[-1]
 
         if len(positions) > 0 and today_code in [pos.contract.identifier for pos in positions if pos.quantity > 0]:
-            for klu_1m in data_src_instance_1m.get_kl_data(limit=1):
-                pass
+            for last_klu in data_src_instance_1m.get_kl_data(limit=2):
+                klu_1m = last_klu
             if klu_1m.high > max_price:
                 max_price = klu_1m.high
 
