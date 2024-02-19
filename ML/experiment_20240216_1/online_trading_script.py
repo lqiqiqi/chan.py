@@ -294,9 +294,7 @@ def buy_model_predict(code, begin_time, end_time):
                      type='text')
 
         else:
-            print(f'why you can enter here?')
-            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序发现进入其他未知情况分支",
-                     type='text')
+            pass
 
 
 if __name__ == '__main__':
