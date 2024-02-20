@@ -123,7 +123,8 @@ def buy_model_predict(code, begin_time, end_time):
         eastern = pytz.timezone("US/Eastern")
         now_eastern = now_utc.astimezone(eastern)
         # 判断当前美东时间是否在17点到18点之间，如果是则停止运行
-        if 17 <= now_eastern.hour < 18:
+        if 17 <= now_eastern.hour < 18 and (len(positions) == 0 or
+                today_code not in [pos.contract.identifier for pos in positions if pos.quantity > 0]):
             send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} 程序正常关闭", type='text')
             break
 
@@ -196,10 +197,12 @@ def buy_model_predict(code, begin_time, end_time):
 
             last_klu_5m = chan[0][-1][-1]
             last_last_klu_5m = [klu for ckl in chan[0][-2:] for klu in ckl][-2]
-            bsp_list = [bsp for bsp in chan.get_bsp() if bsp.is_buy]
+            bsp_list = chan.get_bsp(idx=0)
             if not bsp_list:
                 continue
             last_bsp = bsp_list[-1]
+            if not last_bsp.is_buy:
+                continue
             cur_lv_chan = chan[0]
 
             if last_last_klu_5m.trend[TREND_TYPE.MEAN][5] < last_last_klu_5m.trend[TREND_TYPE.MEAN][60] and \
