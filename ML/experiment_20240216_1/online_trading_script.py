@@ -237,7 +237,7 @@ def buy_model_predict(code, begin_time, end_time):
 
                 send_msg(
                     f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} ma60程序开仓，"
-                    f"最新k线结束时间 {last_klu_5m.time.to_str()}",
+                    f"最新k线结束时间 {last_klu_5m.time.to_str()}, 止损位 {last_bi_begin_low}",
                     type='text')
 
         # 目前有持仓且无市价卖出单：监控当前价格，如果价格跌破重要止损位，撤销原有止损单，提交一个市价卖出单；否则啥也不用做，等利润奔跑；
@@ -245,7 +245,7 @@ def buy_model_predict(code, begin_time, end_time):
                 today_code in [pos.contract.identifier for pos in positions if pos.quantity > 0] and \
                 'MKT' not in [od.order_type for od in open_orders] and klu_1m.close < last_bi_begin_low:
             sell_oid = exec_market_sell(sent_buy_order, open_orders, trade_client, client_config)
-            print(f'跌破重要止损位，止损卖出, sell id {sell_oid}')
+            print(f'跌破重要止损位 {last_bi_begin_low}，止损卖出, sell id {sell_oid}')
             send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} ma60程序跌破重要止损位",
                      type='text')
 
@@ -256,7 +256,8 @@ def buy_model_predict(code, begin_time, end_time):
                 (max_price - klu_1m.low) / max_price > retrace_rate and klu_1m.close < klu_1m.open:
             sell_oid = exec_market_sell(sent_buy_order, open_orders, trade_client, client_config)
             print(f'回撤止盈卖出, sell id {sell_oid}')
-            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} ma60程序回撤止盈卖出",
+            send_msg(f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} ma60程序回撤止盈卖出，最高价 {max_price}，"
+                     f"购买时ma60 {last_buy_ma60}",
                      type='text')
 
         # ma60死叉止盈卖出
