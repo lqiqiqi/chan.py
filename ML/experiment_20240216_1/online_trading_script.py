@@ -237,7 +237,8 @@ def buy_model_predict(code, begin_time, end_time):
 
                 send_msg(
                     f"美东时间 {now_eastern.strftime('%Y-%m-%d %H:%M:%S')} {code} ma60程序开仓，"
-                    f"最新k线结束时间 {last_klu_5m.time.to_str()}, 止损位 {last_bi_begin_low}",
+                    f"最新k线结束时间 {last_klu_5m.time.to_str()}, 止损位 {last_bi_begin_low}，购买时ma60 {last_buy_ma60},"
+                    f"购买时5m k线高点 {max_price}",
                     type='text')
 
         # 目前有持仓且无市价卖出单：监控当前价格，如果价格跌破重要止损位，撤销原有止损单，提交一个市价卖出单；否则啥也不用做，等利润奔跑；
