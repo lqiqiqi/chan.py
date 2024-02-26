@@ -11,11 +11,12 @@ from joblib import load
 from typing import Dict, TypedDict
 import sys
 
+sys.path.append('/root/chan.py')
+
+
 from DataAPI.TigerMockAPI import TigerMock
 from DataAPI.YFinanceAPI import YF
 from DataAPI.csvAPI import CSV_API
-
-sys.path.append('/root/chan.py')
 
 import numpy as np
 import pandas as pd
