@@ -145,15 +145,20 @@ def train_buy_model(code, begin_time, end_time):
             last_break_zs_high = last_zs_high
 
         if is_hold:
-            if last_5m_klu.close < last_buy_zs_high:
-                is_hold = False
+            # if last_5m_klu.close < last_buy_zs_high:
+            #     is_hold = False
+            #     sell_price = last_5m_klu.close
+            #     sell_reason = 'lt last_buy_zs_high'
+            #     print(f'{last_5m_klu.time}: lt last_buy_zs_high sell price = {sell_price} ')
+            if last_last_5m_klu.trend[TREND_TYPE.MEAN][5] > last_last_5m_klu.trend[TREND_TYPE.MEAN][10] and \
+                last_5m_klu.trend[TREND_TYPE.MEAN][5] < last_5m_klu.trend[TREND_TYPE.MEAN][10]:
                 sell_price = last_5m_klu.close
-                sell_reason = 'lt last_buy_zs_high'
-                print(f'{last_5m_klu.time}: lt last_buy_zs_high sell price = {sell_price} ')
-            elif last_bp.is_buy is False and cur_lv_chan[-3].idx == last_bp.klu.klc.idx and last_bp.klu.close > last_buy_price:
-                sell_price = last_5m_klu.close
-                sell_reason = 's1p'
+                sell_reason = 'dead cross'
                 is_hold = False
+            # elif last_bp.is_buy is False and cur_lv_chan[-3].idx == last_bp.klu.klc.idx and last_bp.klu.close > last_buy_price:
+            #     sell_price = last_5m_klu.close
+            #     sell_reason = 's1p'
+            #     is_hold = False
             # elif last_bp.is_buy is False and cur_lv_chan[-2].idx == last_bp.klu.klc.idx and (last_5m_klu.close - last_5m_klu.open)/last_5m_klu.open < -0.0005:
             #     sell_price = last_5m_klu.close
             #     sell_reason = 's1p and one klu retrace gt 0.0005'
