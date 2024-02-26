@@ -202,3 +202,4 @@ if __name__ == '__main__':
     res_df = pd.DataFrame(res_dict)
     print(res_df)
     print(all_code_df)
+    all_code_df.to_csv('tmp_all_code_df1.csv', index=False)
