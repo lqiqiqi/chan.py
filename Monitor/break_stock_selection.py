@@ -1,39 +1,19 @@
 # -*- coding: utf-8 -*-
-# @Time    : 2023/12/20 15:50
-# @Author  : rockieluo
-# @File    : buy_data_generation.py
-
-
-import json
-import math
-import dill
-from joblib import load
-from typing import Dict, TypedDict
 import sys
+from datetime import datetime, timedelta
 
 sys.path.append('/root/chan.py')
 
-
-from DataAPI.TigerMockAPI import TigerMock
+from get_image_api import send_msg
 from DataAPI.YFinanceAPI import YF
-from DataAPI.csvAPI import CSV_API
 
 import numpy as np
 import pandas as pd
-import xgboost as xgb
-from sklearn.datasets import load_svmlight_file
-from sklearn.model_selection import train_test_split
-from sklearn.metrics import roc_auc_score
 
 from Chan import CChan
 from ChanConfig import CChanConfig
-from ChanModel.Features import CFeatures
 from Common.CEnum import AUTYPE, DATA_SRC, KL_TYPE, TREND_TYPE, BSP_TYPE
-from Common.CTime import CTime
-from Plot.PlotDriver import CPlotDriver
 from Test.config import Config
-from candlestick import candlestick
-
 
 
 def cal_atr(cur_lv_chan, n=14):
@@ -57,6 +37,7 @@ def train_buy_model(code, begin_time, end_time):
 
     请注意，demo训练预测都用的是同一份数据，这是不合理的，仅仅是为了演示
     """
+    print(code)
     data_src = DATA_SRC.CSV
     # data_src = DATA_SRC.TigerMock
     lv_list = [KL_TYPE.K_DAY]
@@ -83,11 +64,7 @@ def train_buy_model(code, begin_time, end_time):
     last_break_zs_end_time = None
     last_break_zs_high = None
     first_indx = 0
-    is_hold = False
 
-    trade_info = {'code': [], 'buy_time': [], 'buy_price': [], 'sell_time': [], 'sell_price': [],
-                  'profit': [], 'real_profit': [], 'sell_reason': []
-                  }
     for last_5m_klu in data_src_5m.get_kl_data():
         chan.trigger_load({KL_TYPE.K_DAY: [last_5m_klu]})
         if first_indx < 365:
@@ -95,16 +72,12 @@ def train_buy_model(code, begin_time, end_time):
             continue
         chan_snapshot = chan
         bsp_list = chan_snapshot.get_bsp()
-        seg_bsp_list = chan_snapshot.get_seg_bsp()
         if not bsp_list:
             continue
-        last_bsp = bsp_list[-1]
         bp_list = [bsp for bsp in bsp_list if bsp.is_buy]
         if not bp_list:
             continue
         last_bp = bp_list[-1]
-        # if last_bsp.is_buy:
-        # print(last_bsp.klu.time)
 
         cur_lv_chan = chan_snapshot[0]
         last_zs = cur_lv_chan.zs_list[-1]
@@ -118,8 +91,8 @@ def train_buy_model(code, begin_time, end_time):
             return None
         last_last_seg = cur_lv_chan.seg_list[-2]
 
-        if is_hold is False and (last_last_5m_klu.close < last_zs_high + atr < last_5m_klu.close or
-                 last_last_last_5m_klu.close < last_zs_high + atr < last_last_5m_klu.close) \
+        if (last_last_5m_klu.close < last_zs_high + atr < last_5m_klu.close or
+            last_last_last_5m_klu.close < last_zs_high + atr < last_last_5m_klu.close) \
                 and not (BSP_TYPE.T1P in last_bp.type or BSP_TYPE.T1 in last_bp.type) and \
                 last_5m_klu.close >= last_bi_highest_close:
             if last_zs.begin_bi.get_begin_klu().time < last_last_seg.get_end_klu().time and not last_last_seg.is_up():
@@ -130,13 +103,7 @@ def train_buy_model(code, begin_time, end_time):
 
             last_buy_price = last_5m_klu.close
             last_buy_time = last_5m_klu.time
-            last_buy_zs_high = last_zs_high
             print(f'{last_buy_time}: buy price = {last_buy_price} ')
-            print('bp time', last_bp.klu.time, 'klu_time', last_5m_klu.time.ts, last_5m_klu.time.to_str(), 'last_zs.begin.time', last_zs.begin.time, 'last_zs.end.time', last_zs.end.time, 'last_zs high', last_zs_high, 'last_bsp_time', last_bp.klu.time, 'last_bsp is buy', last_bp.is_buy)
-            is_hold = True
-            trade_info['code'] = code
-            trade_info['buy_time'].append(last_5m_klu.time.to_str())
-            trade_info['buy_price'].append(last_buy_price)
 
             last_break = last_5m_klu.time.to_str()
             last_break_bsp = last_bp.klu.time
@@ -144,50 +111,26 @@ def train_buy_model(code, begin_time, end_time):
             last_break_zs_end_time = last_zs.end.time
             last_break_zs_high = last_zs_high
 
-        if is_hold:
-            # if last_5m_klu.close < last_buy_zs_high:
-            #     is_hold = False
-            #     sell_price = last_5m_klu.close
-            #     sell_reason = 'lt last_buy_zs_high'
-            #     print(f'{last_5m_klu.time}: lt last_buy_zs_high sell price = {sell_price} ')
-            if last_last_5m_klu.trend[TREND_TYPE.MEAN][5] > last_last_5m_klu.trend[TREND_TYPE.MEAN][10] and \
-                last_5m_klu.trend[TREND_TYPE.MEAN][5] < last_5m_klu.trend[TREND_TYPE.MEAN][10]:
-                sell_price = last_5m_klu.close
-                sell_reason = 'dead cross'
-                is_hold = False
-            # elif last_bp.is_buy is False and cur_lv_chan[-3].idx == last_bp.klu.klc.idx and last_bp.klu.close > last_buy_price:
-            #     sell_price = last_5m_klu.close
-            #     sell_reason = 's1p'
-            #     is_hold = False
-            # elif last_bp.is_buy is False and cur_lv_chan[-2].idx == last_bp.klu.klc.idx and (last_5m_klu.close - last_5m_klu.open)/last_5m_klu.open < -0.0005:
-            #     sell_price = last_5m_klu.close
-            #     sell_reason = 's1p and one klu retrace gt 0.0005'
-            #     is_hold = False
-
-            if not is_hold:
-                print('sell at ', last_5m_klu.time.to_str())
-                trade_info['sell_reason'].append(sell_reason)
-                trade_info['sell_time'].append(last_5m_klu.time.to_str())
-                trade_info['sell_price'].append(sell_price)
-                trade_info['profit'].append((sell_price - last_buy_price) / last_buy_price * 100)
-                trade_info['real_profit'].append((sell_price - last_buy_price))
-
-    trade_df = pd.DataFrame(trade_info)
-    return last_break, last_break_bsp, last_break_zs_begin_time, last_break_zs_end_time, last_break_zs_high, trade_df
+    return last_break, last_break_bsp, last_break_zs_begin_time, last_break_zs_end_time, last_break_zs_high
 
 
 if __name__ == '__main__':
-    res_dict = {'code': [], 'last_break': [],  'last_break_bsp': [], 'last_break_zs_begin_time': [],
+    res_dict = {'code': [], 'last_break': [], 'last_break_bsp': [], 'last_break_zs_begin_time': [],
                 'last_break_zs_end_time': [], 'last_break_zs_high': []}
-    all_code_df = pd.DataFrame()
+
+    today = datetime.today()
+    date_1000_days_later = today - timedelta(days=1200)
+    formatted_begin = date_1000_days_later.strftime("%Y-%m-%d")
+    formatted_end = today.strftime("%Y-%m-%d")
+
     for code in ['VTI', 'OEF', 'SPY', 'DIA', 'MDY', 'RSP', 'QQQ', 'QTEC', 'IWB', 'IWM', 'MTUM', 'SPHB',
                  'QUAL', 'SPLV', 'RSPC', 'RSPD', 'RSPS', 'RSPG', 'RSPF', 'RSPH', 'RSPN', 'RSPM', 'RSPR', 'RSPT',
                  'RSPU', 'IWY', 'IVW', 'IWF', 'IWO', 'METV', 'IPO', 'SNSR', 'XT', 'MOAT', 'SOCL', 'ONLN', 'SKYY',
                  'HERO', 'IBUY', 'IPAY', 'FINX', 'CIBR', 'IGF', 'DRIV', 'BOTZ', 'ROBO', 'MOO', 'TAN', 'QCLN', 'PBW']:
 
         try:
-            last_break, last_break_bsp, last_break_zs_begin_time, last_break_zs_end_time, last_break_zs_high, trade_df =\
-            train_buy_model(code=code, begin_time = "2021-01-01", end_time = "2024-02-24")
+            last_break, last_break_bsp, last_break_zs_begin_time, last_break_zs_end_time, last_break_zs_high = \
+                train_buy_model(code=code, begin_time=formatted_begin, end_time=formatted_end)
         except Exception as e:
             print(e)
             continue
@@ -196,10 +139,14 @@ if __name__ == '__main__':
         res_dict['last_break_zs_begin_time'].append(last_break_zs_begin_time)
         res_dict['last_break_zs_end_time'].append(last_break_zs_end_time)
         res_dict['last_break_zs_high'].append(last_break_zs_high)
-
         res_dict['code'].append(code)
-        all_code_df = pd.concat([all_code_df, trade_df], axis=0)
     res_df = pd.DataFrame(res_dict)
+    res_df['last_break'] = pd.to_datetime(res_df['last_break'])  # 将字符串转换为日期格式
+    two_weeks_ago = datetime.now() - timedelta(days=3)  # 计算3天前日期
+    res_df = res_df[res_df['last_break'] > two_weeks_ago]  # 获取最近两周内的数据
+    res_df['last_break'] = res_df['last_break'].dt.strftime('%Y-%m-%d')
+
+    if len(res_df) > 0:
+        recent_break_dict = res_df.set_index('code')['last_break'].to_dict()
+        send_msg('近3天突破中枢高点：' + str(recent_break_dict), 'text')
     print(res_df)
-    print(all_code_df)
-    all_code_df.to_csv('tmp_all_code_df1.csv', index=False)

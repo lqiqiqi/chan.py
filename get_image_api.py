@@ -48,7 +48,7 @@ def post_url_with_header(url, data):
         return {'result': False, 'message': u'请求异常' % e}
 
 
-def send_msg(content, type):
+def send_msg(content, type='text'):
     url = "https://open.feishu.cn/open-apis/bot/v2/hook/148342f6-0570-4041-9b3d-0e30a85ce035"
     if type == 'text':
         data = {"msg_type": "text", "content": {"text": content}}
