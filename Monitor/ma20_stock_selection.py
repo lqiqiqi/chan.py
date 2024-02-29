@@ -3,11 +3,10 @@
 from datetime import datetime, timedelta
 import sys
 
-from get_image_api import send_msg
-
 sys.path.append('/root/chan.py')
 
 from DataAPI.YFinanceAPI import YF
+from get_image_api import send_msg
 
 import pandas as pd
 
