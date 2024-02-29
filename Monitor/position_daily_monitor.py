@@ -59,7 +59,7 @@ def monitor(code, begin_time, end_time):
 
     str = code
     if last_day_klu.close < last_day_klu.trend[TREND_TYPE.MEAN][20]:
-        str += '\n 破线：20日均线拐头'
+        str += '\n 破线：跌破20日均线'
 
     if last_last_last_day_klu.trend[TREND_TYPE.MEAN][20] < last_last_day_klu.trend[TREND_TYPE.MEAN][20] and \
             last_last_day_klu.trend[TREND_TYPE.MEAN][20] > last_day_klu.trend[TREND_TYPE.MEAN][20]:
