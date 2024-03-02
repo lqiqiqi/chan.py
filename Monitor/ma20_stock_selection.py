@@ -78,10 +78,9 @@ if __name__ == '__main__':
     date_1000_days_later = today - timedelta(days=80)
     formatted_begin = date_1000_days_later.strftime("%Y-%m-%d")
     formatted_end = today.strftime("%Y-%m-%d")
-    for code in ['VTI', 'OEF', 'SPY', 'DIA', 'MDY', 'RSP', 'QQQ', 'QTEC', 'IWB', 'IWM', 'MTUM', 'SPHB',
-                 'QUAL', 'SPLV', 'RSPC', 'RSPD', 'RSPS', 'RSPG', 'RSPF', 'RSPH', 'RSPN', 'RSPM', 'RSPR', 'RSPT',
-                 'RSPU', 'IWY', 'IVW', 'IWF', 'IWO', 'METV', 'IPO', 'SNSR', 'XT', 'MOAT', 'SOCL', 'ONLN', 'SKYY',
-                 'HERO', 'IBUY', 'IPAY', 'FINX', 'CIBR', 'IGF', 'DRIV', 'BOTZ', 'ROBO', 'MOO', 'TAN', 'QCLN', 'PBW']:
+    etf_df = pd.read_csv('etf_history_perfomance.csv', index_col=0).dropna()
+    etf_df = etf_df[etf_df['exp_return'] > 1.5]
+    for code in etf_df['code'].unique():
         try:
             last_break =\
             train_buy_model(code=code, begin_time=formatted_begin, end_time=formatted_end)
@@ -94,11 +93,17 @@ if __name__ == '__main__':
 
     res_df = pd.DataFrame(res_dict)
     res_df['last_break'] = pd.to_datetime(res_df['last_break'])  # 将字符串转换为日期格式
-    two_weeks_ago = datetime.now() - timedelta(days=3)  # 计算3天前日期
+    two_weeks_ago = datetime.now() - timedelta(days=3)  # 计算3天内日期
     res_df = res_df[res_df['last_break'] > two_weeks_ago]  # 获取最近两周内的数据
     res_df['last_break'] = res_df['last_break'].dt.strftime('%Y-%m-%d')
 
     if len(res_df) > 0:
+        single_stk_df = etf_df[etf_df['code'].isin(res_df['code'].unique())].set_index('code')[['exp_return', 'sector']].round(2)
+        duplicated_index = single_stk_df.index.duplicated(keep='first')
+        single_stk_df = single_stk_df[~duplicated_index]
+
+        hist_perf_dict = {idx: ', '.join(f'{val}' for col, val in row.items())
+                  for idx, row in single_stk_df.iterrows()}
         recent_break_dict = res_df.set_index('code')['last_break'].to_dict()
-        send_msg('ma20拐头：' + str(recent_break_dict), 'text')
+        send_msg('ma20拐头：' + str(recent_break_dict) + '\n' + str(hist_perf_dict), 'text')
     print(res_df)

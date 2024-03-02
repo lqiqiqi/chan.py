@@ -123,10 +123,10 @@ if __name__ == '__main__':
     formatted_begin = date_1000_days_later.strftime("%Y-%m-%d")
     formatted_end = today.strftime("%Y-%m-%d")
 
-    for code in ['VTI', 'OEF', 'SPY', 'DIA', 'MDY', 'RSP', 'QQQ', 'QTEC', 'IWB', 'IWM', 'MTUM', 'SPHB',
-                 'QUAL', 'SPLV', 'RSPC', 'RSPD', 'RSPS', 'RSPG', 'RSPF', 'RSPH', 'RSPN', 'RSPM', 'RSPR', 'RSPT',
-                 'RSPU', 'IWY', 'IVW', 'IWF', 'IWO', 'METV', 'IPO', 'SNSR', 'XT', 'MOAT', 'SOCL', 'ONLN', 'SKYY',
-                 'HERO', 'IBUY', 'IPAY', 'FINX', 'CIBR', 'IGF', 'DRIV', 'BOTZ', 'ROBO', 'MOO', 'TAN', 'QCLN', 'PBW']:
+    etf_df = pd.read_csv('etf_history_perfomance.csv', index_col=0).dropna()
+    etf_df = etf_df[etf_df['exp_return'] > 1.5]
+
+    for code in etf_df['code'].unique():
 
         try:
             last_break, last_break_bsp, last_break_zs_begin_time, last_break_zs_end_time, last_break_zs_high = \
@@ -147,6 +147,11 @@ if __name__ == '__main__':
     res_df['last_break'] = res_df['last_break'].dt.strftime('%Y-%m-%d')
 
     if len(res_df) > 0:
+        single_stk_df = etf_df[etf_df['code'].isin(res_df['code'].unique())].set_index('code')[['exp_return', 'sector']].round(2)
+        duplicated_index = single_stk_df.index.duplicated(keep='first')
+        single_stk_df = single_stk_df[~duplicated_index]
+        hist_perf_dict = {idx: ', '.join(f'{val}' for col, val in row.items())
+                  for idx, row in single_stk_df.iterrows()}
         recent_break_dict = res_df.set_index('code')['last_break'].to_dict()
-        send_msg('近3天突破中枢高点：' + str(recent_break_dict), 'text')
+        send_msg('近3天突破中枢高点：' + str(recent_break_dict) + '\n' + str(hist_perf_dict), 'text')
     print(res_df)
