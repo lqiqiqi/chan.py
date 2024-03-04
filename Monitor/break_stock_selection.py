@@ -142,7 +142,7 @@ if __name__ == '__main__':
         res_dict['code'].append(code)
     res_df = pd.DataFrame(res_dict)
     res_df['last_break'] = pd.to_datetime(res_df['last_break'])  # 将字符串转换为日期格式
-    two_weeks_ago = datetime.now() - timedelta(days=3)  # 计算3天前日期
+    two_weeks_ago = datetime.now() - timedelta(days=3.9)  # 计算3天前日期
     res_df = res_df[res_df['last_break'] >= two_weeks_ago]  # 获取最近两周内的数据
     res_df['last_break'] = res_df['last_break'].dt.strftime('%Y-%m-%d')
 
