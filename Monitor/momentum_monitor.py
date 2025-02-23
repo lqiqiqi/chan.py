@@ -1,3 +1,8 @@
+import sys
+
+sys.path.append('/root/chan.py')
+
+
 import yfinance as yf
 import pandas as pd
 import numpy as np
