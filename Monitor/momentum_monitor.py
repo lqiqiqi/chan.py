@@ -30,7 +30,7 @@ SYMBOLS = ["XLF", "XLP", "XLE", "XLI", "XLV", "XLU",
            "SMH", "XLB", "XLK", "XLY", "KBE", "VNQ",
            "IBB", "IYF", "KIE", "GLD",     "SPY", "KWEB", "XLF", "IBIT", "QQQ", "TLT", "IWM",
             "IEMG", "RSP", "IEF", "IGV", "SCHG", "FXI",
-            "IJH", "IEFA", "LQD", '510300.SS', '510880.SS', '159915.SZ', '510500.SS', '159928.SZ']
+            "IJH", "IEFA", "LQD", '510300.SS', '510880.SS', '159781.SZ', '510500.SS', '159928.SZ']
 LOOKBACK_WINDOW = 21  # 动量计算窗口
 TREND_DAYS = 5  # 排名趋势观察期
 
