@@ -49,7 +49,7 @@ def post_url_with_header(url, data):
 
 
 def send_msg(content, type='text'):
-    url = "https://open.feishu.cn/open-apis/bot/v2/hook/148342f6-0570-4041-9b3d-0e30a85ce035"
+    url = "https://open.feishu.cn/open-apis/bot/v2/hook/dc5c707c-77a6-4676-9a45-42e1d62b8b4d"
     if type == 'text':
         data = {"msg_type": "text", "content": {"text": content}}
     elif type == 'image':
