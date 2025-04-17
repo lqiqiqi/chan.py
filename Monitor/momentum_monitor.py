@@ -98,7 +98,7 @@ report = []
 
 # 价格排名前五
 top_price = result.nsmallest(10, 'price_rank')  # 假设price_rank值越小排名越高
-price_str = "🏆 当前价格动量排名前十：\n" + "\n".join(
+price_str = "价格动量排名：" + "\n".join(
     [f"{i+1}. {row.symbol} (排名：{row.price_rank:.2f})"
      for i, (_, row) in enumerate(top_price.iterrows())]
 )
@@ -112,8 +112,6 @@ risers_str = f"\n\n🚀 最近{TREND_DAYS}天排名上升最快前五：\n" + "\
 
 # 组合报告
 full_report = f"""
-📈 {datetime.today().strftime('%Y-%m-%d')} 动量监控报告
-{'-'*40}
 {price_str}
 {risers_str}
 """
